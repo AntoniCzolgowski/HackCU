@@ -11,6 +11,7 @@ import streamlit as st
 from utils.api import get, post
 
 st.set_page_config(page_title="Bookie Buddy | World Cup Lab", page_icon="IQ", layout="wide")
+MAX_MATCHES = 5
 
 st.markdown(
     """
@@ -83,13 +84,13 @@ st.caption("Decision-support only. SIM mode default. Uses odds, player/team cont
 
 with st.sidebar:
     st.header("World Cup Match Browser")
-    all_events = get("/events")
+    all_events = get("/events", params={"limit": MAX_MATCHES})
 
     if st.button("Refresh Odds + Model", use_container_width=True):
         for ev in all_events:
             post(f"/events/{ev['id']}/recommendations/refresh")
         st.success("World Cup board refreshed")
-        all_events = get("/events")
+        all_events = get("/events", params={"limit": MAX_MATCHES})
 
     live_state = st.selectbox("State", ["All", "Live", "Pre-match"])
     stage_set = sorted({e.get("competition_stage") or "Unknown" for e in all_events})
