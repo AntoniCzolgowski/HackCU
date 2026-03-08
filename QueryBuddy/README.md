@@ -52,13 +52,13 @@ QueryBuddy lets you query across multiple microservice databases using plain Eng
 cd backend
 pip install -r requirements.txt
 export ANTHROPIC_API_KEY=your_key_here
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --host 127.0.0.1 --port 8010
 ```
 
 The backend will automatically:
 - Create and seed all 4 mock SQLite databases
 - Ingest all schemas into the registry
-- Start the API on http://localhost:8000
+- Start the API on http://127.0.0.1:8010
 
 ### 2. Frontend
 
@@ -69,6 +69,12 @@ npm run dev
 ```
 
 Open http://localhost:3000
+
+If needed, set frontend API target:
+
+```bash
+export VITE_QUERYBUDDY_API_URL=http://127.0.0.1:8010
+```
 
 ---
 

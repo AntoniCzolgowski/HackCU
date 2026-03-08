@@ -59,13 +59,13 @@ const ROADMAP_STYLES: google.maps.MapTypeStyle[] = [
 ];
 
 export function MapScene({ meta, snapshot, selectedEntity, onSelectEntity }: MapSceneProps) {
-  const mapConfig = meta.map_config ?? {
-    provider: "none" as const,
-    google_maps_api_key: import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? null,
-    default_map_type: "roadmap" as const,
-    available_map_types: ["roadmap", "terrain", "hybrid"] as MapTypeKey[],
-    initial_center: [-96.98, 32.78] as [number, number],
-    initial_zoom: 9.5,
+  const mapConfig = {
+    provider: meta.map_config?.provider ?? ("none" as const),
+    google_maps_api_key: meta.map_config?.google_maps_api_key || import.meta.env.VITE_GOOGLE_MAPS_API_KEY || null,
+    default_map_type: meta.map_config?.default_map_type ?? ("roadmap" as const),
+    available_map_types: meta.map_config?.available_map_types ?? (["roadmap", "terrain", "hybrid"] as MapTypeKey[]),
+    initial_center: meta.map_config?.initial_center ?? ([-96.98, 32.78] as [number, number]),
+    initial_zoom: meta.map_config?.initial_zoom ?? 9.5,
   };
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);

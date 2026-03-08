@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = "http://localhost:8000";
+const API = (import.meta.env.VITE_QUERYBUDDY_API_URL || "http://127.0.0.1:8010").replace(/\/$/, "");
 
 const SUGGESTED_QUERIES = [
   "Show me all active users",
@@ -850,7 +850,7 @@ export default function App() {
     } catch (e) {
       setMessages(m => [...m, {
         type: "assistant",
-        understanding: "Failed to connect to the backend. Make sure the API server is running on port 8000.",
+        understanding: `Failed to connect to the backend. Make sure the API server is running at ${API}.`,
         queries: [], stitching_note: null, warnings: [e.message]
       }]);
     }

@@ -6,7 +6,7 @@ python-dotenv
 elevenlabs
 SpeechRecognition
 groq
-mediapipe==0.10.14
+mediapipe==0.10.32
 opencv-python-headless
 matplotlib
 speechrecognition
