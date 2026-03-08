@@ -135,7 +135,7 @@ pytest -q
 ## Beginner Glossary
 
 - `Event`: A match, for example Mexico vs South Africa.
-- `Market`: Bet type, for example 3-way moneyline, Over/Under 2.5, BTTS.
+- `Market`: Bet type, for example 3-way moneyline, Over/Under 2.5, BTTS (Both Teams To Score).
 - `Selection` / `Outcome`: One option in a market, for example "Mexico win".
 - `Decimal Odds`: Payout multiplier. `2.50` means a 1-unit stake returns 2.50 total if it wins.
 - `Implied Probability`: Market-estimated chance from odds. Formula: `1 / decimal_odds`.
