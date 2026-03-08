@@ -84,6 +84,14 @@ def business_compare(business_id: str, city_id: str | None = Query(None)) -> dic
         _raise_http_from_value_error(error)
 
 
+@app.get("/api/business/{business_id}/opportunity-board")
+def business_opportunity_board(business_id: str, city_id: str | None = Query(None)) -> dict:
+    try:
+        return service.get_opportunity_board(business_id=business_id, city_id=city_id)
+    except ValueError as error:
+        _raise_http_from_value_error(error)
+
+
 @app.get("/api/zone/{zone_id}")
 def zone_detail(
     zone_id: str,

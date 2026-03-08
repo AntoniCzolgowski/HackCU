@@ -215,7 +215,11 @@ class MatchFlowService:
     ) -> dict[str, Any]:
         ms = self._ms(city_id, match_id)
         scenario = ms.scenarios.get(scenario_id, ms.baseline)
-        day_data = scenario["days"][str(day)]
+        day_key = str(day)
+        if day_key not in scenario["days"]:
+            valid = sorted(scenario["days"].keys())
+            raise ValueError(f"Invalid day={day}. Valid days: {valid}")
+        day_data = scenario["days"][day_key]
         safe_step = max(0, min(ms.engine.steps_per_day - 1, step))
         safe_layer = layer if layer in DAY_LAYERS else "total"
 
@@ -636,7 +640,11 @@ class MatchFlowService:
             raise KeyError(business_id)
 
         scenario = ms.scenarios.get(scenario_id, ms.baseline)
-        day_data = scenario["days"][str(day)]
+        day_key = str(day)
+        if day_key not in scenario["days"]:
+            valid = sorted(scenario["days"].keys())
+            raise ValueError(f"Invalid day={day}. Valid days: {valid}")
+        day_data = scenario["days"][day_key]
         day_summary = day_data["business_day_summary"][business_id]
         revenue = self._estimate_served_revenue(ms, business, day_summary)
         zone_context = self._build_zone_context(ms, day_data=day_data, business=business, business_id=business_id)
@@ -739,6 +747,97 @@ class MatchFlowService:
         comparisons.sort(key=lambda item: item["revenue_estimate"], reverse=True)
         return {"business_id": business_id, "city_id": resolved_city_id, "comparisons": comparisons}
 
+    def get_opportunity_board(self, *, business_id: str, city_id: str | None = None) -> dict[str, Any]:
+        resolved_city_id = self._resolve_city_id(city_id)
+        registry = load_matches_registry(resolved_city_id)
+        entries: list[dict[str, Any]] = []
+
+        for match in registry["matches"]:
+            ms = self._ensure_match(resolved_city_id, match["match_id"])
+            if business_id not in ms.businesses_by_id:
+                continue
+            day_summary = ms.baseline["days"]["0"]["business_day_summary"].get(business_id)
+            if not day_summary:
+                continue
+            business = ms.businesses_by_id[business_id]
+            revenue = self._estimate_served_revenue(ms, business, day_summary)
+            zone_context = self._build_zone_context(ms, day_data=ms.baseline["days"]["0"], business=business, business_id=business_id)
+            dominant_segment = max(day_summary["nationality_mix"].items(), key=lambda item: item[1])
+            segment_label = {
+                "team_a": match["home_team"]["name"],
+                "team_b": match["away_team"]["name"],
+                "neutral": "Neutral fans",
+                "locals": "Locals",
+            }.get(dominant_segment[0], dominant_segment[0].title())
+            entries.append({
+                "match_id": match["match_id"],
+                "title": match["title"],
+                "stage": match["stage"],
+                "kickoff_local": match["kickoff_local"],
+                "home_team": match["home_team"],
+                "away_team": match["away_team"],
+                "revenue_estimate": revenue["total"],
+                "served_visits": day_summary["served_visits_today"],
+                "peak_capacity_pct": day_summary["peak_capacity_pct_capped"],
+                "zone_share": zone_context["share_of_zone_demand"],
+                "dominant_segment": segment_label,
+                "spillover_total": day_summary.get("spillover_total", 0),
+            })
+
+        if not entries:
+            return {"business_id": business_id, "city_id": resolved_city_id, "portfolio_summary": {}, "matches": []}
+
+        max_revenue = max(e["revenue_estimate"] for e in entries) or 1
+        max_visits = max(e["served_visits"] for e in entries) or 1
+
+        scored: list[dict[str, Any]] = []
+        for e in entries:
+            revenue_index = e["revenue_estimate"] / max_revenue
+            demand_index = e["served_visits"] / max_visits
+            risk_index = max(0.0, min(1.0, (e["peak_capacity_pct"] - 85) / 65))
+            capture_index = e["zone_share"] / 100
+            confidence_index = 1 - min(0.45, e["spillover_total"] / max(e["served_visits"], 1))
+            opportunity_score = round(100 * (
+                0.45 * revenue_index +
+                0.20 * demand_index +
+                0.20 * (1 - risk_index) +
+                0.10 * capture_index +
+                0.05 * confidence_index
+            ), 1)
+            tag = "top_opportunity" if opportunity_score >= 75 else ("solid" if opportunity_score >= 50 else "low_priority")
+            scored.append({
+                **{k: v for k, v in e.items() if k != "spillover_total"},
+                "score_breakdown": {
+                    "revenue_index": round(revenue_index, 3),
+                    "demand_index": round(demand_index, 3),
+                    "risk_index": round(risk_index, 3),
+                    "capture_index": round(capture_index, 3),
+                    "confidence_index": round(confidence_index, 3),
+                },
+                "opportunity_score": opportunity_score,
+                "recommendation_tag": tag,
+            })
+        scored.sort(key=lambda x: x["opportunity_score"], reverse=True)
+
+        scores = [s["opportunity_score"] for s in scored]
+        avg_score = round(sum(scores) / len(scores), 1)
+        volatility = round(max(scores) - min(scores), 1) if len(scores) > 1 else 0
+        risk_count = sum(1 for s in scored if s["score_breakdown"]["risk_index"] > 0.5)
+        focus_ids = [s["match_id"] for s in scored if s["recommendation_tag"] == "top_opportunity"]
+
+        return {
+            "business_id": business_id,
+            "city_id": resolved_city_id,
+            "portfolio_summary": {
+                "best_match_id": scored[0]["match_id"],
+                "avg_opportunity_score": avg_score,
+                "volatility_index": volatility,
+                "risk_exposure_pct": round(risk_count / len(scored) * 100, 1),
+                "recommended_focus_match_ids": focus_ids,
+            },
+            "matches": scored,
+        }
+
     def get_zone_detail(
         self,
         *,
@@ -755,7 +854,11 @@ class MatchFlowService:
         if zone_id not in {"stadium_zone", "fanzone_zone"}:
             raise KeyError(zone_id)
         scenario = ms.scenarios.get(scenario_id, ms.baseline)
-        day_data = scenario["days"][str(day)]
+        day_key = str(day)
+        if day_key not in scenario["days"]:
+            valid = sorted(scenario["days"].keys())
+            raise ValueError(f"Invalid day={day}. Valid days: {valid}")
+        day_data = scenario["days"][day_key]
         summary = day_data["zone_day_summary"][zone_id]
         venue = ms.special_venues_by_id[zone_id]
         payload = {

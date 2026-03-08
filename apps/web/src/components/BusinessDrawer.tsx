@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import {
   Bar,
@@ -12,12 +12,13 @@ import {
   YAxis,
 } from "recharts";
 
-import type { BusinessDetailResponse, BusinessMatchComparison, MatchMeta, MetricFilterKey } from "../lib/types";
+import type { BusinessDetailResponse, BusinessMatchComparison, MatchMeta, MetricFilterKey, OpportunityBoardResponse } from "../lib/types";
 import { formatCompact, titleCase } from "../lib/format";
 
 interface BusinessDrawerProps {
   detail: BusinessDetailResponse | null;
   comparison: BusinessMatchComparison | null;
+  opportunityBoard: OpportunityBoardResponse | null;
   match: MatchMeta;
   isLoading: boolean;
   metricFilters: Record<MetricFilterKey, boolean>;
@@ -73,6 +74,69 @@ function buildDemandChartRows(detail: BusinessDetailResponse | null): DemandChar
     });
 }
 
+/* ── Staffing Calculator ────────────────────────────── */
+const STAFF_RATIOS: Record<string, number> = {
+  restaurant: 1 / 12,
+  sports_bar: 1 / 15,
+  cocktail_bar: 1 / 10,
+  hotel_bar: 1 / 12,
+  hotel: 1 / 20,
+};
+
+function buildStaffingPlan(detail: BusinessDetailResponse) {
+  const ratio = STAFF_RATIOS[detail.business.type] ?? 1 / 14;
+  const series = detail.active_visitors_series_15m;
+  const hours: { label: string; staff: number; peak: number }[] = [];
+  for (let i = 0; i < series.length; i += 4) {
+    const chunk = series.slice(i, i + 4);
+    const peak = Math.max(...chunk.map((p) => p.value));
+    const staff = Math.max(1, Math.ceil(peak * ratio));
+    hours.push({ label: chunk[0].label, staff, peak });
+  }
+  return hours;
+}
+
+/* ── Inventory Prep Guide ───────────────────────────── */
+const DRINK_RATIOS: Record<string, number> = { restaurant: 1.2, sports_bar: 2.5, cocktail_bar: 2.0, hotel_bar: 1.8, hotel: 0.8 };
+const FOOD_RATIOS: Record<string, number> = { restaurant: 0.85, sports_bar: 0.4, cocktail_bar: 0.2, hotel_bar: 0.3, hotel: 0.5 };
+const BEER_SHARE: Record<string, number> = { restaurant: 0.5, sports_bar: 0.7, cocktail_bar: 0.3, hotel_bar: 0.4, hotel: 0.4 };
+
+function buildInventoryGuide(detail: BusinessDetailResponse, match: MatchMeta) {
+  const visitors = detail.served_visits_today;
+  const type = detail.business.type;
+  const totalDrinks = Math.ceil(visitors * (DRINK_RATIOS[type] ?? 1.5));
+  const totalFood = Math.ceil(visitors * (FOOD_RATIOS[type] ?? 0.5));
+  const beerPct = BEER_SHARE[type] ?? 0.5;
+  const beers = Math.ceil(totalDrinks * beerPct);
+  const cocktails = Math.ceil(totalDrinks * (1 - beerPct - 0.15));
+  const softDrinks = totalDrinks - beers - cocktails;
+  const waterBottles = Math.ceil(visitors * 0.6);
+
+  const mix = detail.nationality_mix;
+  const dominant = Object.entries(mix).sort((a, b) => b[1] - a[1])[0];
+  const dominantLabel = dominant[0] === "team_a" ? match.home_team.name : dominant[0] === "team_b" ? match.away_team.name : dominant[0] === "locals" ? "local" : "neutral";
+
+  return { totalDrinks, totalFood, beers, cocktails, softDrinks, waterBottles, dominantLabel };
+}
+
+/* ── CSV Export ──────────────────────────────────────── */
+function downloadCSV(detail: BusinessDetailResponse, match: MatchMeta) {
+  const header = "Time,Active Visitors,Marker\n";
+  const rows = detail.active_visitors_series_15m.map((p) => `${p.label},${p.value},${p.marker ?? ""}`).join("\n");
+  const summary =
+    `\n\nSummary\nVenue,"${detail.business.name}"\nType,${detail.business.type}\n` +
+    `Match,"${match.title}"\nServed Visits,${detail.served_visits_today}\n` +
+    `Revenue Estimate,$${detail.served_revenue.total}\nPeak Time,${detail.peak.label}\n` +
+    `Peak Visitors,${detail.peak_active_visitors}\nPeak Capacity %,${detail.peak_capacity_pct_capped}\n`;
+  const blob = new Blob([header + rows + summary], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${detail.business.name.replace(/\s+/g, "_")}_matchflow.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function ExplanationPanel({
   metricKey,
   detail,
@@ -109,6 +173,7 @@ function ExplanationPanel({
 export function BusinessDrawer({
   detail,
   comparison,
+  opportunityBoard,
   match,
   isLoading,
   metricFilters,
@@ -119,6 +184,7 @@ export function BusinessDrawer({
 }: BusinessDrawerProps) {
   const demandChartRows = useMemo(() => buildDemandChartRows(detail), [detail]);
   const isMatchDay = detail?.day === 0;
+  const [boardSort, setBoardSort] = useState<"score" | "revenue" | "risk">("score");
 
   const fanMixRows = useMemo(() => {
     if (!detail) return [];
@@ -141,6 +207,18 @@ export function BusinessDrawer({
       color: colors[key] ?? "#94A3B8",
     }));
   }, [detail, match.away_team.color, match.away_team.name, match.home_team.color, match.home_team.name]);
+
+  const staffingPlan = useMemo(() => (detail ? buildStaffingPlan(detail) : []), [detail]);
+  const inventoryGuide = useMemo(() => (detail ? buildInventoryGuide(detail, match) : null), [detail, match]);
+
+  const sortedBoardMatches = useMemo(() => {
+    if (!opportunityBoard?.matches.length) return [];
+    const matches = [...opportunityBoard.matches];
+    if (boardSort === "revenue") matches.sort((a, b) => b.revenue_estimate - a.revenue_estimate);
+    else if (boardSort === "risk") matches.sort((a, b) => b.score_breakdown.risk_index - a.score_breakdown.risk_index);
+    else matches.sort((a, b) => b.opportunity_score - a.opportunity_score);
+    return matches;
+  }, [opportunityBoard, boardSort]);
 
   if (!detail && !isLoading) {
     return (
@@ -178,6 +256,27 @@ export function BusinessDrawer({
         </div>
       </div>
 
+      {/* ── Capacity Alert Banner ────────────────────── */}
+      {detail.peak_capacity_pct_capped >= 100 && (
+        <div className="capacity-alert-banner danger fade-in-up">
+          <strong>Capacity warning</strong>
+          <span>
+            Projected to reach {detail.peak_capacity_pct_capped}% at {detail.peak.label}.
+            {detail.peak_capacity_pct_capped >= 120
+              ? " Expect queues and spillover. Simplify menu and add queue management."
+              : " Plan for busy-hour staffing and fast service."}
+          </span>
+        </div>
+      )}
+      {detail.peak_capacity_pct_capped >= 85 && detail.peak_capacity_pct_capped < 100 && (
+        <div className="capacity-alert-banner warning fade-in-up">
+          <strong>Heads up</strong>
+          <span>
+            Projected to reach {detail.peak_capacity_pct_capped}% capacity at {detail.peak.label}. Prepare for a busy window.
+          </span>
+        </div>
+      )}
+
       <div className="metric-filter-row">
         {(Object.keys(metricFilters) as MetricFilterKey[]).map((key) => (
           <button
@@ -198,12 +297,15 @@ export function BusinessDrawer({
         <button type="button" className="compact-chip" onClick={onGenerateReport} disabled={reportState.isGenerating}>
           {reportState.isGenerating ? "Generating PDF..." : "Generate PDF report"}
         </button>
+        <button type="button" className="compact-chip" onClick={() => downloadCSV(detail, match)}>
+          Export CSV
+        </button>
         {reportState.status ? <span className="stat-footnote">Report: {reportState.status}</span> : null}
       </div>
 
       <div className="insight-grid">
         {detail.insight_cards.map((card, index) => (
-          <article key={card.label} className={`insight-card tone-${card.tone}`}>
+          <article key={card.label} className={`insight-card tone-${card.tone} fade-in-up`} style={{ animationDelay: `${index * 60}ms` }}>
             <div className={`insight-card-top ${index % 2 === 0 ? "popover-anchor-left" : "popover-anchor-right"}`}>
               <span>{card.label}</span>
               <ExplanationPanel metricKey={card.metric_key} detail={detail} />
@@ -222,7 +324,7 @@ export function BusinessDrawer({
           </div>
           <div className="capacity-gauge-bar">
             <div
-              className="capacity-gauge-fill"
+              className="capacity-gauge-fill animated-fill"
               style={{
                 width: `${Math.min(detail.peak_capacity_pct_capped / 1.5, 100)}%`,
                 background: detail.peak_capacity_pct_capped >= 120 ? "#F43F5E" : detail.peak_capacity_pct_capped >= 85 ? "#F97316" : "#22C55E",
@@ -232,6 +334,34 @@ export function BusinessDrawer({
           <div className="capacity-gauge-labels">
             <span>{detail.peak_capacity_pct_capped}% at peak</span>
             <span>{detail.peak_capacity_pct_capped >= 120 ? "Over capacity - expect queues" : detail.peak_capacity_pct_capped >= 85 ? "Busy operating window" : "Healthy headroom"} | 150% display cap</span>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ── Staffing Calculator ──────────────────────── */}
+      {metricFilters.capacity && staffingPlan.length > 0 ? (
+        <div className="chart-card fade-in-up">
+          <h3>Staffing calculator</h3>
+          <p className="chart-footnote">Recommended staff count per hour based on peak visitor load and venue type ratio (1:{Math.round(1 / (STAFF_RATIOS[detail.business.type] ?? 1 / 14))}).</p>
+          <ResponsiveContainer width="100%" height={160}>
+            <BarChart data={staffingPlan} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#203046" />
+              <XAxis dataKey="label" stroke="#cbd5e1" tickLine={false} axisLine={false} interval={1} tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={48} />
+              <YAxis stroke="#cbd5e1" tickLine={false} axisLine={false} width={32} tick={{ fontSize: 10 }} />
+              <Tooltip
+                contentStyle={{ borderRadius: 14, border: "1px solid rgba(148, 163, 184, 0.25)", background: "#ffffff", color: "#0f172a", boxShadow: "0 16px 40px rgba(15, 23, 42, 0.18)" }}
+                formatter={(value) => [`${Number(value ?? 0)} staff`, "Recommended"]}
+              />
+              <Bar dataKey="staff" radius={[6, 6, 0, 0]} maxBarSize={18}>
+                {staffingPlan.map((row, i) => (
+                  <Cell key={i} fill={row.staff >= Math.ceil(detail.business.capacity_estimate * (STAFF_RATIOS[detail.business.type] ?? 1 / 14) * 0.8) ? "#F97316" : "#38BDF8"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="staffing-summary">
+            <span>Peak: <strong>{Math.max(...staffingPlan.map((h) => h.staff))} staff</strong> at {staffingPlan.reduce((a, b) => (b.staff > a.staff ? b : a)).label}</span>
+            <span>Min: <strong>{Math.min(...staffingPlan.map((h) => h.staff))} staff</strong> during off-peak</span>
           </div>
         </div>
       ) : null}
@@ -305,11 +435,47 @@ export function BusinessDrawer({
       ) : null}
 
       {metricFilters.revenue ? (
-        <article className="recommendation-card revenue-card">
+        <article className="recommendation-card revenue-card fade-in-up">
           <p className="eyebrow">Revenue estimate</p>
           <strong>${detail.served_revenue.total.toLocaleString()}</strong>
           <p>
             Based on {detail.served_revenue.served_visits_today} served visits x ${detail.served_revenue.avg_spend.toFixed(0)} average spend x {Math.round(detail.served_revenue.service_capture_rate * 100)}% capture rate.
+          </p>
+        </article>
+      ) : null}
+
+      {/* ── Inventory Prep Guide ─────────────────────── */}
+      {metricFilters.revenue && inventoryGuide ? (
+        <article className="recommendation-card fade-in-up" style={{ animationDelay: "80ms" }}>
+          <p className="eyebrow">Inventory prep guide</p>
+          <div className="inventory-grid">
+            <div className="inventory-item">
+              <strong>{inventoryGuide.beers.toLocaleString()}</strong>
+              <span>Beers</span>
+            </div>
+            <div className="inventory-item">
+              <strong>{inventoryGuide.cocktails.toLocaleString()}</strong>
+              <span>Cocktails</span>
+            </div>
+            <div className="inventory-item">
+              <strong>{inventoryGuide.softDrinks.toLocaleString()}</strong>
+              <span>Soft drinks</span>
+            </div>
+            <div className="inventory-item">
+              <strong>{inventoryGuide.waterBottles.toLocaleString()}</strong>
+              <span>Water bottles</span>
+            </div>
+            <div className="inventory-item">
+              <strong>{inventoryGuide.totalFood.toLocaleString()}</strong>
+              <span>Food portions</span>
+            </div>
+            <div className="inventory-item">
+              <strong>{detail.served_visits_today.toLocaleString()}</strong>
+              <span>Expected visitors</span>
+            </div>
+          </div>
+          <p className="fan-mix-insight" style={{ marginTop: 10 }}>
+            Dominant fan group: {inventoryGuide.dominantLabel}. Bias beer selection and menu specials toward this audience.
           </p>
         </article>
       ) : null}
@@ -343,7 +509,7 @@ export function BusinessDrawer({
                   {row.label}
                 </span>
                 <div className="fan-mix-bar-shell">
-                  <div className="fan-mix-bar" style={{ width: `${row.value}%`, background: row.color }} />
+                  <div className="fan-mix-bar animated-fill" style={{ width: `${row.value}%`, background: row.color }} />
                 </div>
                 <strong>{row.value}%</strong>
               </div>
@@ -377,6 +543,66 @@ export function BusinessDrawer({
             </div>
           </article>
         </>
+      ) : null}
+
+      {/* ── Opportunity Board ────────────────────────── */}
+      {metricFilters.competition && opportunityBoard && opportunityBoard.matches.length > 0 ? (
+        <div className="chart-card board-card fade-in-up">
+          <div className="chart-header">
+            <h3>Consulting Opportunity Board</h3>
+          </div>
+          <div className="board-kpi-strip">
+            <div className="board-kpi glow-accent">
+              <span>Best Match</span>
+              <strong>{opportunityBoard.matches.find((m) => m.match_id === opportunityBoard.portfolio_summary.best_match_id)?.title ?? "—"}</strong>
+            </div>
+            <div className="board-kpi">
+              <span>Avg Score</span>
+              <strong>{opportunityBoard.portfolio_summary.avg_opportunity_score}</strong>
+            </div>
+            <div className="board-kpi">
+              <span>Volatility</span>
+              <strong>{opportunityBoard.portfolio_summary.volatility_index}</strong>
+            </div>
+            <div className="board-kpi">
+              <span>Risk Exp.</span>
+              <strong>{opportunityBoard.portfolio_summary.risk_exposure_pct}%</strong>
+            </div>
+          </div>
+
+          <div className="board-sort-row">
+            {(["score", "revenue", "risk"] as const).map((key) => (
+              <button key={key} type="button" className={boardSort === key ? "compact-chip active" : "compact-chip"} onClick={() => setBoardSort(key)}>
+                {key === "score" ? "Score" : key === "revenue" ? "Revenue" : "Risk"}
+              </button>
+            ))}
+          </div>
+
+          <ResponsiveContainer width="100%" height={Math.max(140, sortedBoardMatches.length * 36)} >
+            <BarChart data={sortedBoardMatches} layout="vertical" margin={{ left: 10, right: 8 }}>
+              <XAxis type="number" domain={[0, 100]} hide />
+              <YAxis type="category" dataKey="title" width={110} stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{ borderRadius: 14, border: "1px solid rgba(148,163,184,0.25)", background: "#fff", color: "#0f172a" }}
+                formatter={(value, _name, props) => {
+                  const p = (props as unknown as { payload: { recommendation_tag: string; revenue_estimate: number; peak_capacity_pct: number } }).payload;
+                  return [`Score: ${value} | Rev: $${p.revenue_estimate.toLocaleString()} | Cap: ${p.peak_capacity_pct}%`, p.recommendation_tag];
+                }}
+              />
+              <Bar dataKey="opportunity_score" radius={[0, 8, 8, 0]} maxBarSize={20}>
+                {sortedBoardMatches.map((m) => (
+                  <Cell key={m.match_id} fill={m.recommendation_tag === "top_opportunity" ? "#22C55E" : m.recommendation_tag === "solid" ? "#F97316" : "#94A3B8"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+
+          <div className="board-legend">
+            <span><i style={{ background: "#22C55E" }} />Top opportunity</span>
+            <span><i style={{ background: "#F97316" }} />Solid</span>
+            <span><i style={{ background: "#94A3B8" }} />Low priority</span>
+          </div>
+        </div>
       ) : null}
 
       {metricFilters.competition ? (

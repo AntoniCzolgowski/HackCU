@@ -343,6 +343,14 @@ def load_seed_bundle(city_id: str | None = None, match_id: str | None = None) ->
     payload = copy.deepcopy(city_base)
     payload["match"] = match_entry
     payload["weather"] = _build_weather(datetime.fromisoformat(match_entry["kickoff_local"]))
+
+    if LIVE_ENRICHMENT_PATH.exists():
+        enrichment = load_json(LIVE_ENRICHMENT_PATH)
+        weather_overrides = enrichment.get("weather_overrides", {}).get(selected_city_id, {})
+        for day_key, overrides in weather_overrides.items():
+            if day_key in payload["weather"]:
+                payload["weather"][day_key].update(overrides)
+
     payload["fanzones"] = copy.deepcopy(payload["special_venues"])
     _seed_cache[cache_key] = payload
     return payload

@@ -6,6 +6,7 @@ import {
   fetchBusinessComparison,
   fetchMatches,
   fetchMeta,
+  fetchOpportunityBoard,
   fetchProvenance,
   fetchReportJob,
   fetchSimulation,
@@ -19,6 +20,7 @@ import type {
   MatchesResponse,
   MetaResponse,
   MetricFilterKey,
+  OpportunityBoardResponse,
   ProvenanceResponse,
   ReportJobResponse,
   SimulationSnapshotResponse,
@@ -65,6 +67,7 @@ export default function App() {
   const [businessDetail, setBusinessDetail] = useState<BusinessDetailResponse | null>(null);
   const [zoneDetail, setZoneDetail] = useState<ZoneDetailResponse | null>(null);
   const [businessComparison, setBusinessComparison] = useState<BusinessMatchComparison | null>(null);
+  const [opportunityBoard, setOpportunityBoard] = useState<OpportunityBoardResponse | null>(null);
   const [provenance, setProvenance] = useState<ProvenanceResponse | null>(null);
   const [selectedDay, setSelectedDay] = useState(INITIAL_DAY);
   const [selectedStep, setSelectedStep] = useState(INITIAL_STEP);
@@ -92,6 +95,7 @@ export default function App() {
     setBusinessDetail(null);
     setZoneDetail(null);
     setBusinessComparison(null);
+    setOpportunityBoard(null);
     setSelectedEntity(null);
     setBootStartedAt(Date.now());
     setBootElapsedMs(0);
@@ -227,6 +231,14 @@ export default function App() {
         })
         .catch(() => {
           if (!cancelled) setBusinessComparison(null);
+        });
+
+      fetchOpportunityBoard({ businessId: selectedEntity.id, cityId: selectedCityId })
+        .then((payload) => {
+          if (!cancelled) startTransition(() => setOpportunityBoard(payload));
+        })
+        .catch(() => {
+          if (!cancelled) setOpportunityBoard(null);
         });
     } else {
       fetchZone({
@@ -367,6 +379,7 @@ export default function App() {
     <BusinessDrawer
       detail={businessDetail}
       comparison={businessComparison}
+      opportunityBoard={opportunityBoard}
       match={meta.match}
       isLoading={entityLoading}
       metricFilters={metricFilters}
