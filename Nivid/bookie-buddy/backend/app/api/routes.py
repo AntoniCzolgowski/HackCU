@@ -54,6 +54,7 @@ def list_events(
     is_live: bool | None = Query(default=None),
     sport: str | None = None,
     league: str | None = None,
+    limit: int = Query(default=250, ge=1, le=500),
     db: Session = Depends(get_db),
 ) -> list[Event]:
     settings = get_settings()
@@ -66,6 +67,7 @@ def list_events(
         stmt = stmt.where(Event.league == league)
     elif settings.world_cup_only:
         stmt = stmt.where(Event.league.ilike(f"%{settings.world_cup_league_name}%"))
+    stmt = stmt.limit(limit)
     return db.execute(stmt).scalars().all()
 
 
