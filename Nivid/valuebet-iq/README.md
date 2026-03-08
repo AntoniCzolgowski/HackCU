@@ -131,3 +131,34 @@ pytest -q
 - Worker polls continuously and updates recommendations + audit trail.
 - Weather context uses Open-Meteo forecast endpoint.
 - News context uses Google News RSS search per team to detect injury/dispute risk headlines.
+
+## Beginner Glossary
+
+- `Event`: A match, for example Mexico vs South Africa.
+- `Market`: Bet type, for example 3-way moneyline, Over/Under 2.5, BTTS.
+- `Selection` / `Outcome`: One option in a market, for example "Mexico win".
+- `Decimal Odds`: Payout multiplier. `2.50` means a 1-unit stake returns 2.50 total if it wins.
+- `Implied Probability`: Market-estimated chance from odds. Formula: `1 / decimal_odds`.
+- `Overround`: Built-in bookmaker margin that pushes combined implied probabilities above 100%.
+- `Normalized Implied Probability`: Implied probabilities adjusted to remove overround.
+- `Model Probability`: ValueBet IQ probability estimate from odds, team strength, players, weather, and news.
+- `Edge`: Difference between model and market probability. Formula: `model_prob - implied_prob`.
+- `Expected Value (EV)`: Long-run value estimate. Formula: `model_prob * decimal_odds - 1`.
+- `TOP_PICK`: High-value recommendation that passes all risk checks.
+- `LEAN`: Smaller value signal; weaker than top pick.
+- `NO_BET`: Not enough edge or confidence.
+- `BLOCKED_BY_RISK`: Positive edge exists, but risk controls block execution.
+- `Risk Tier`: Safety label: `LOW_RISK`, `MEDIUM_RISK`, `HIGH_RISK`, or `PASS`.
+- `Bankroll`: Total budget tracked by the app.
+- `Stake`: Amount placed on a single bet.
+- `Max Stake`: Per-bet cap.
+- `Max Exposure per Event`: Maximum combined risk on one match.
+- `Max Daily Loss`: Daily drawdown guardrail; blocks new bets after limit.
+- `Data Freshness`: Maximum age of odds data before recommendations are blocked.
+- `Odds Drift Tolerance`: Max allowed movement from quote to execution.
+- `SIM Mode`: Default paper-trading mode (no real money).
+- `LIVE Mode`: Optional real execution via official APIs only, behind confirmations and kill switch.
+- `Kill Switch`: Emergency stop for all new order execution.
+- `Idempotency Key`: Unique request key that prevents accidental duplicate bets.
+- `Audit Log`: Immutable activity trail for recommendations, risk decisions, and orders.
+- `Backtest`: Replay strategy logic on stored historical odds snapshots.
