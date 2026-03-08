@@ -84,7 +84,7 @@ docker compose up --build
 
 3. Open:
 
-- Dashboard: http://localhost:8501
+- Dashboard: http://localhost:8520
 - API docs: http://localhost:8000/docs
 - Metrics: http://localhost:8000/metrics
 
