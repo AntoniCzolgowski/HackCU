@@ -309,6 +309,23 @@ input {
 .capacity-gauge-section {
   position: relative;
   overflow: visible;
+  z-index: 0;
+}
+
+.chart-card:hover,
+.chart-card:focus-within,
+.insight-card:hover,
+.insight-card:focus-within,
+.capacity-gauge-section:hover,
+.capacity-gauge-section:focus-within,
+.recommendation-card:hover,
+.recommendation-card:focus-within {
+  z-index: 35;
+}
+
+.insight-grid,
+.detail-grid {
+  isolation: isolate;
 }
 
 .kpi-card span,
@@ -416,6 +433,7 @@ input {
   min-height: 780px;
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
+  z-index: 1;
 }
 
 .google-map-surface {
@@ -429,7 +447,7 @@ input {
   border-radius: 20px;
   border: 1px solid var(--line);
   background: rgba(9, 19, 31, 0.82);
-  z-index: 10;
+  z-index: 16;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -486,7 +504,7 @@ input {
 
 .map-tooltip {
   position: absolute;
-  z-index: 11;
+  z-index: 30;
   min-width: 180px;
   pointer-events: none;
   display: flex;
@@ -524,6 +542,8 @@ input {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: relative;
+  z-index: 20;
 }
 
 .drawer {
@@ -1023,7 +1043,7 @@ input {
   pointer-events: none;
   transform: translateY(6px);
   transition: opacity 120ms ease, transform 120ms ease;
-  z-index: 80;
+  z-index: 420;
 }
 
 .metric-explanation-popover.inline {
@@ -1180,8 +1200,34 @@ input {
   }
 }
 
+@keyframes ambientDrift {
+  0%, 100% {
+    transform: translate3d(-4%, -3%, 0) scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate3d(6%, 4%, 0) scale(1.08);
+    opacity: 0.5;
+  }
+}
+
+@keyframes crossfadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .fade-in-up {
   animation: fadeInUp 0.35s ease both;
+}
+
+.cinematic-crossfade {
+  animation: crossfadeSlide 0.32s ease both;
 }
 
 .animated-fill {
@@ -1267,17 +1313,42 @@ input {
 
 /* ── Opportunity Board ─────────────────────────────── */
 .board-card {
+  position: relative;
+  overflow: hidden;
   border-color: rgba(34, 197, 94, 0.3);
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(8, 47, 73, 0.26)),
+    rgba(15, 23, 42, 0.7);
+}
+
+.board-card::before {
+  content: "";
+  position: absolute;
+  inset: -28% -16%;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(34, 197, 94, 0.2), transparent 48%),
+    radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.2), transparent 45%);
+  animation: ambientDrift 11s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.board-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .board-kpi-strip {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 12px;
+  isolation: isolate;
 }
 
 .board-kpi {
+  position: relative;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1286,6 +1357,25 @@ input {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid var(--line);
   text-align: center;
+}
+
+.board-kpi:hover,
+.board-kpi:focus-within {
+  z-index: 40;
+}
+
+.board-kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.board-kpi-head .info-button {
+  width: 18px;
+  height: 18px;
+  font-size: 0.72rem;
+  box-shadow: none;
 }
 
 .board-kpi span {
@@ -1305,7 +1395,7 @@ input {
   background:
     linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(15, 23, 42, 0.7));
   background-size: 200% 200%;
-  animation: gradientShift 4s ease infinite;
+  animation: gradientShift 4s ease infinite, pulseGlow 3s ease-in-out infinite;
 }
 
 .board-kpi.glow-accent strong {
@@ -1344,6 +1434,57 @@ input {
   height: 10px;
   border-radius: 999px;
   display: inline-block;
+}
+
+.board-reco-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.board-reco-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(15, 23, 42, 0.52);
+  font-size: 0.78rem;
+}
+
+.board-reco-item strong {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.board-reco-item.reco-push strong {
+  color: #4ade80;
+}
+
+.board-reco-item.reco-hold strong {
+  color: #fb923c;
+}
+
+.board-reco-item.reco-avoid strong {
+  color: #cbd5e1;
+}
+
+.board-combo-shell {
+  position: relative;
+  z-index: 0;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(7, 17, 28, 0.58);
+}
+
+.board-combo-shell:hover,
+.board-combo-shell:focus-within {
+  z-index: 36;
 }
 
 /* ── Match Comparison List ─────────────────────────── */
@@ -1468,6 +1609,10 @@ input {
     grid-template-columns: 1fr;
   }
 
+  .board-kpi-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .right-column {
     flex-direction: column;
   }
@@ -1483,5 +1628,21 @@ input {
   .city-selector-row,
   .schedule-preview-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-up,
+  .cinematic-crossfade,
+  .board-kpi.glow-accent,
+  .capacity-alert-banner.danger,
+  .drawer-loading-bar,
+  .board-card::before {
+    animation: none !important;
+  }
+
+  .animated-fill,
+  .capacity-gauge-fill {
+    transition: none !important;
   }
 }

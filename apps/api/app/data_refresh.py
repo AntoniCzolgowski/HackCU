@@ -7,7 +7,7 @@ from typing import Any
 import httpx
 
 from .config import RAW_DIR, settings
-from .data_loader import LIVE_ENRICHMENT_PATH, dump_json, load_seed_bundle
+from .data_loader import LIVE_ENRICHMENT_PATH, dump_json, load_json, load_seed_bundle
 from .service import MatchFlowService
 
 
@@ -100,14 +100,37 @@ def _google_price_level(value: str | None, fallback: int) -> int:
     return mapping.get(value or "", fallback)
 
 
+def _normalize_city_weather_payload(raw: Any, city_id: str) -> dict[str, dict[str, Any]]:
+    if not isinstance(raw, dict):
+        return {}
+
+    if raw and all(isinstance(key, str) and key.lstrip("-").isdigit() for key in raw):
+        return {city_id: raw}
+
+    normalized: dict[str, dict[str, Any]] = {}
+    for maybe_city_id, maybe_payload in raw.items():
+        if isinstance(maybe_city_id, str) and isinstance(maybe_payload, dict):
+            normalized[maybe_city_id] = maybe_payload
+    return normalized
+
+
 async def refresh() -> dict[str, Any]:
     seed_bundle = load_seed_bundle()
+    selected_city_id = seed_bundle["match"]["city_id"]
     weather_overrides = await fetch_open_meteo(seed_bundle)
     business_overrides = await fetch_google_places(seed_bundle)
+    existing_payload = load_json(LIVE_ENRICHMENT_PATH) if LIVE_ENRICHMENT_PATH.exists() else {}
+    existing_weather = _normalize_city_weather_payload(existing_payload.get("weather_overrides"), selected_city_id)
+    existing_weather[selected_city_id] = weather_overrides
+    existing_business = existing_payload.get("business_overrides")
+    if not isinstance(existing_business, dict):
+        existing_business = {}
+    merged_business_overrides = {**existing_business, **business_overrides}
     payload = {
+        **existing_payload,
         "generated_at": date.today().isoformat(),
-        "weather_overrides": weather_overrides,
-        "business_overrides": business_overrides,
+        "weather_overrides": existing_weather,
+        "business_overrides": merged_business_overrides,
     }
     RAW_DIR.mkdir(parents=True, exist_ok=True)
     dump_json(LIVE_ENRICHMENT_PATH, payload)
@@ -116,7 +139,7 @@ async def refresh() -> dict[str, Any]:
     return {
         "live_enrichment_path": str(LIVE_ENRICHMENT_PATH),
         **artifacts,
-        "weather_override_days": sorted(weather_overrides),
+        "weather_override_days": sorted(weather_overrides.keys()),
         "business_overrides": len(business_overrides),
     }
 

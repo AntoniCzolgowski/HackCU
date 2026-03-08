@@ -74,6 +74,8 @@ export function MapScene({ meta, snapshot, selectedEntity, onSelectEntity }: Map
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
   const [venueMode, setVenueMode] = useState<VenueMode>("frontline");
+  const [pulsePhase, setPulsePhase] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const [visibleLayers, setVisibleLayers] = useState<Record<LayerToggleKey, boolean>>({
     corridors: true,
     districts: true,
@@ -81,6 +83,19 @@ export function MapScene({ meta, snapshot, selectedEntity, onSelectEntity }: Map
     specials: true,
     labels: true,
   });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduceMotion(media.matches);
+    onChange();
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", onChange);
+      return () => media.removeEventListener("change", onChange);
+    }
+    media.addListener(onChange);
+    return () => media.removeListener(onChange);
+  }, []);
 
   const edgePathById = useMemo(() => new globalThis.Map(meta.edges.map((edge) => [edge.id, edge.path])), [meta.edges]);
   const businessOverlayById = useMemo(
@@ -122,8 +137,58 @@ export function MapScene({ meta, snapshot, selectedEntity, onSelectEntity }: Map
     [meta.special_venues, specialOverlayById],
   );
 
+  const selectedPulsePoint = useMemo(() => {
+    if (!selectedEntity) return null;
+    if (selectedEntity.type === "business") {
+      const business = meta.businesses.find((item) => item.id === selectedEntity.id);
+      if (!business) return null;
+      return {
+        id: selectedEntity.id,
+        position: [business.lng, business.lat] as [number, number],
+        baseRadius: 110,
+      };
+    }
+    const venue = specialVenues.find((item) => item.id === selectedEntity.id);
+    if (!venue) return null;
+    return {
+      id: selectedEntity.id,
+      position: [venue.lng, venue.lat] as [number, number],
+      baseRadius: venue.entity_type === "stadium" ? 280 : 220,
+    };
+  }, [meta.businesses, selectedEntity, specialVenues]);
+
+  useEffect(() => {
+    if (reduceMotion || !selectedPulsePoint) {
+      setPulsePhase(0);
+      return;
+    }
+    const handle = window.setInterval(() => {
+      setPulsePhase((value) => (value + 1) % 120);
+    }, 80);
+    return () => window.clearInterval(handle);
+  }, [reduceMotion, selectedPulsePoint]);
+
   const layers = useMemo(() => {
     const layerList = [];
+
+    if (selectedPulsePoint) {
+      const phase = reduceMotion ? 0.55 : (Math.sin((pulsePhase / 120) * Math.PI * 2) + 1) / 2;
+      layerList.push(
+        new ScatterplotLayer({
+          id: "selected-entity-pulse",
+          data: [selectedPulsePoint],
+          pickable: false,
+          radiusUnits: "meters",
+          stroked: true,
+          filled: true,
+          getPosition: (item: { position: [number, number] }) => item.position,
+          getRadius: (item: { baseRadius: number }) => item.baseRadius + (reduceMotion ? 0 : 220 * phase),
+          getFillColor: [250, 204, 21, reduceMotion ? 25 : Math.round(18 + 24 * phase)],
+          getLineColor: [250, 204, 21, reduceMotion ? 170 : Math.round(120 + 100 * phase)],
+          lineWidthMinPixels: 3,
+        }),
+      );
+    }
 
     if (visibleLayers.corridors) {
       layerList.push(
@@ -296,7 +361,7 @@ export function MapScene({ meta, snapshot, selectedEntity, onSelectEntity }: Map
     }
 
     return layerList;
-  }, [edgePathById, onSelectEntity, selectedEntity?.id, snapshot.edges, snapshot.zones, snapshot.business_overlay, specialVenues, visibleBusinesses, visibleLayers]);
+  }, [edgePathById, onSelectEntity, pulsePhase, reduceMotion, selectedEntity?.id, selectedPulsePoint, snapshot.edges, snapshot.zones, snapshot.business_overlay, specialVenues, visibleBusinesses, visibleLayers]);
 
   useEffect(() => {
     const apiKey = mapConfig.google_maps_api_key;
@@ -356,7 +421,7 @@ export function MapScene({ meta, snapshot, selectedEntity, onSelectEntity }: Map
   };
 
   return (
-    <section className="map-shell">
+    <section className="map-shell cinematic-crossfade">
       <div ref={containerRef} className="google-map-surface" />
       <div className="map-overlay-panel top">
         <p className="eyebrow">Live map</p>

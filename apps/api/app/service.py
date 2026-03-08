@@ -25,6 +25,14 @@ from .reporting import build_business_report_pdf
 from .simulator import DAY_LAYERS, SimulationEngine
 
 
+class InvalidInputError(ValueError):
+    """Raised when request parameters are syntactically valid but semantically invalid."""
+
+
+class NotFoundError(ValueError):
+    """Raised when a requested domain entity cannot be found."""
+
+
 @dataclass(slots=True)
 class ReportJob:
     job_id: str
@@ -87,6 +95,13 @@ class MatchFlowService:
     def _resolve_match_id(self, city_id: str, match_id: str | None) -> str:
         registry = load_matches_registry(city_id)
         return match_id or registry["default_match_id"]
+
+    def _require_day(self, scenario: dict[str, Any], day: int) -> dict[str, Any]:
+        day_key = str(day)
+        if day_key not in scenario["days"]:
+            valid = sorted(scenario["days"].keys())
+            raise InvalidInputError(f"Invalid day={day}. Valid days: {valid}")
+        return scenario["days"][day_key]
 
     def _ensure_match(self, city_id: str, match_id: str) -> _MatchState:
         key = (city_id, match_id)
@@ -198,7 +213,8 @@ class MatchFlowService:
             "available_layers": list(DAY_LAYERS),
             "source_availability": {
                 "google_places": bool(settings.google_maps_api_key),
-                "anthropic": bool(settings.anthropic_api_key),
+                "gemini": bool(settings.gemini_api_key),
+                "llm_recommendations": bool(settings.gemini_api_key),
                 "baseline_seed": True,
             },
         }
@@ -215,11 +231,7 @@ class MatchFlowService:
     ) -> dict[str, Any]:
         ms = self._ms(city_id, match_id)
         scenario = ms.scenarios.get(scenario_id, ms.baseline)
-        day_key = str(day)
-        if day_key not in scenario["days"]:
-            valid = sorted(scenario["days"].keys())
-            raise ValueError(f"Invalid day={day}. Valid days: {valid}")
-        day_data = scenario["days"][day_key]
+        day_data = self._require_day(scenario, day)
         safe_step = max(0, min(ms.engine.steps_per_day - 1, step))
         safe_layer = layer if layer in DAY_LAYERS else "total"
 
@@ -640,11 +652,7 @@ class MatchFlowService:
             raise KeyError(business_id)
 
         scenario = ms.scenarios.get(scenario_id, ms.baseline)
-        day_key = str(day)
-        if day_key not in scenario["days"]:
-            valid = sorted(scenario["days"].keys())
-            raise ValueError(f"Invalid day={day}. Valid days: {valid}")
-        day_data = scenario["days"][day_key]
+        day_data = self._require_day(scenario, day)
         day_summary = day_data["business_day_summary"][business_id]
         revenue = self._estimate_served_revenue(ms, business, day_summary)
         zone_context = self._build_zone_context(ms, day_data=day_data, business=business, business_id=business_id)
@@ -652,8 +660,10 @@ class MatchFlowService:
         recommendation = await self.recommendations.generate(
             business=business,
             day_summary=day_summary,
+            zone_context=zone_context,
             match=ms.seed_bundle["match"],
             weather=day_data["weather"],
+            day=day,
         )
         payload = {
             "entity_type": "business",
@@ -750,12 +760,14 @@ class MatchFlowService:
     def get_opportunity_board(self, *, business_id: str, city_id: str | None = None) -> dict[str, Any]:
         resolved_city_id = self._resolve_city_id(city_id)
         registry = load_matches_registry(resolved_city_id)
+        default_state = self._ensure_match(resolved_city_id, registry["default_match_id"])
+        if business_id not in default_state.businesses_by_id:
+            raise NotFoundError(f"Unknown business: {business_id}")
+
         entries: list[dict[str, Any]] = []
 
         for match in registry["matches"]:
             ms = self._ensure_match(resolved_city_id, match["match_id"])
-            if business_id not in ms.businesses_by_id:
-                continue
             day_summary = ms.baseline["days"]["0"]["business_day_summary"].get(business_id)
             if not day_summary:
                 continue
@@ -785,18 +797,38 @@ class MatchFlowService:
             })
 
         if not entries:
-            return {"business_id": business_id, "city_id": resolved_city_id, "portfolio_summary": {}, "matches": []}
+            raise NotFoundError(f"No opportunity data for business: {business_id}")
 
         max_revenue = max(e["revenue_estimate"] for e in entries) or 1
         max_visits = max(e["served_visits"] for e in entries) or 1
+        peak_values = [e["peak_capacity_pct"] for e in entries]
+        spill_rates = [e["spillover_total"] / max(e["served_visits"], 1) for e in entries]
+        peak_floor = min(peak_values)
+        peak_span = max(peak_values) - peak_floor
+        spill_floor = min(spill_rates)
+        spill_span = max(spill_rates) - spill_floor
 
         scored: list[dict[str, Any]] = []
-        for e in entries:
+        for index, e in enumerate(entries):
             revenue_index = e["revenue_estimate"] / max_revenue
             demand_index = e["served_visits"] / max_visits
-            risk_index = max(0.0, min(1.0, (e["peak_capacity_pct"] - 85) / 65))
+            peak_relative = 0.5 if peak_span == 0 else (e["peak_capacity_pct"] - peak_floor) / peak_span
+            spill_relative = 0.5 if spill_span == 0 else (spill_rates[index] - spill_floor) / spill_span
+            risk_index = max(0.0, min(1.0, 0.7 * peak_relative + 0.3 * spill_relative))
             capture_index = e["zone_share"] / 100
             confidence_index = 1 - min(0.45, e["spillover_total"] / max(e["served_visits"], 1))
+            execution_pressure = round(100 * max(0.0, min(1.0, 0.6 * risk_index + 0.4 * spill_relative)), 1)
+            stability_score = round(
+                100
+                * max(
+                    0.0,
+                    min(
+                        1.0,
+                        0.65 * confidence_index + 0.35 * (1 - min(1.0, abs(peak_relative - 0.5) * 2)),
+                    ),
+                ),
+                1,
+            )
             opportunity_score = round(100 * (
                 0.45 * revenue_index +
                 0.20 * demand_index +
@@ -804,9 +836,12 @@ class MatchFlowService:
                 0.10 * capture_index +
                 0.05 * confidence_index
             ), 1)
-            tag = "top_opportunity" if opportunity_score >= 75 else ("solid" if opportunity_score >= 50 else "low_priority")
+            quick_recommendation = "Push" if opportunity_score >= 70 and risk_index <= 0.6 else ("Hold" if opportunity_score >= 55 else "Avoid")
+            tag = "top_opportunity" if quick_recommendation == "Push" else ("solid" if quick_recommendation == "Hold" else "low_priority")
             scored.append({
                 **{k: v for k, v in e.items() if k != "spillover_total"},
+                "execution_pressure": execution_pressure,
+                "stability_score": stability_score,
                 "score_breakdown": {
                     "revenue_index": round(revenue_index, 3),
                     "demand_index": round(demand_index, 3),
@@ -816,14 +851,19 @@ class MatchFlowService:
                 },
                 "opportunity_score": opportunity_score,
                 "recommendation_tag": tag,
+                "quick_recommendation": quick_recommendation,
             })
         scored.sort(key=lambda x: x["opportunity_score"], reverse=True)
 
         scores = [s["opportunity_score"] for s in scored]
         avg_score = round(sum(scores) / len(scores), 1)
         volatility = round(max(scores) - min(scores), 1) if len(scores) > 1 else 0
-        risk_count = sum(1 for s in scored if s["score_breakdown"]["risk_index"] > 0.5)
-        focus_ids = [s["match_id"] for s in scored if s["recommendation_tag"] == "top_opportunity"]
+        risk_count = sum(1 for s in scored if s["score_breakdown"]["risk_index"] > 0.65)
+        focus_ids = [s["match_id"] for s in scored if s["quick_recommendation"] == "Push"]
+        if not focus_ids:
+            focus_ids = [scored[0]["match_id"]]
+        avg_execution_pressure = round(sum(item["execution_pressure"] for item in scored) / len(scored), 1)
+        avg_stability = round(sum(item["stability_score"] for item in scored) / len(scored), 1)
 
         return {
             "business_id": business_id,
@@ -833,6 +873,8 @@ class MatchFlowService:
                 "avg_opportunity_score": avg_score,
                 "volatility_index": volatility,
                 "risk_exposure_pct": round(risk_count / len(scored) * 100, 1),
+                "execution_pressure": avg_execution_pressure,
+                "stability_score": avg_stability,
                 "recommended_focus_match_ids": focus_ids,
             },
             "matches": scored,
@@ -854,11 +896,7 @@ class MatchFlowService:
         if zone_id not in {"stadium_zone", "fanzone_zone"}:
             raise KeyError(zone_id)
         scenario = ms.scenarios.get(scenario_id, ms.baseline)
-        day_key = str(day)
-        if day_key not in scenario["days"]:
-            valid = sorted(scenario["days"].keys())
-            raise ValueError(f"Invalid day={day}. Valid days: {valid}")
-        day_data = scenario["days"][day_key]
+        day_data = self._require_day(scenario, day)
         summary = day_data["zone_day_summary"][zone_id]
         venue = ms.special_venues_by_id[zone_id]
         payload = {
@@ -907,6 +945,10 @@ class MatchFlowService:
             match_id=ms.match_id,
         )
         comparison = self.get_business_match_comparison(business_id=business_id, city_id=ms.city_id)
+        try:
+            opportunity_board = self.get_opportunity_board(business_id=business_id, city_id=ms.city_id)
+        except ValueError:
+            opportunity_board = None
         job_id = f"report-{uuid4().hex[:10]}"
         output_path = REPORTS_DIR / ms.city_id / f"{job_id}.pdf"
         job = ReportJob(job_id=job_id, status="queued", output_path=output_path, business_id=business_id, city_id=ms.city_id, match_id=ms.match_id)
@@ -919,6 +961,7 @@ class MatchFlowService:
                 "match": ms.seed_bundle["match"],
                 "detail": detail,
                 "comparison": comparison,
+                "opportunity_board": opportunity_board,
                 "visible_sections": visible_sections or detail["visible_sections"],
                 "output_path": output_path,
             },
@@ -1050,13 +1093,21 @@ class MatchFlowService:
         match: dict[str, Any],
         detail: dict[str, Any],
         comparison: dict[str, Any],
+        opportunity_board: dict[str, Any] | None,
         visible_sections: dict[str, bool],
         output_path: Path,
     ) -> None:
         job = self._report_jobs[job_id]
         job.status = "running"
         try:
-            build_business_report_pdf(match=match, detail=detail, comparison=comparison, visible_sections=visible_sections, output_path=output_path)
+            build_business_report_pdf(
+                match=match,
+                detail=detail,
+                comparison=comparison,
+                opportunity_board=opportunity_board,
+                visible_sections=visible_sections,
+                output_path=output_path,
+            )
             job.status = "completed"
         except Exception as exc:  # pragma: no cover
             job.status = "failed"

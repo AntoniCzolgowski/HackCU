@@ -60,7 +60,7 @@ function ExplanationPanel({
 export function ZoneDrawer({ detail, match, isLoading, onJumpToStep }: ZoneDrawerProps) {
   if (!detail && !isLoading) {
     return (
-      <aside className="panel drawer">
+      <aside className="panel drawer cinematic-crossfade">
         <div className="section-header">
           <h2>Special venue intelligence</h2>
         </div>
@@ -71,7 +71,7 @@ export function ZoneDrawer({ detail, match, isLoading, onJumpToStep }: ZoneDrawe
 
   if (!detail || isLoading) {
     return (
-      <aside className="panel drawer">
+      <aside className="panel drawer cinematic-crossfade">
         <div className="section-header">
           <h2>Special venue intelligence</h2>
         </div>
@@ -84,7 +84,7 @@ export function ZoneDrawer({ detail, match, isLoading, onJumpToStep }: ZoneDrawe
   }
 
   return (
-    <aside className="panel drawer">
+    <aside className="panel drawer cinematic-crossfade">
       <div className="section-header">
         <div>
           <h2>{detail.venue.name}</h2>

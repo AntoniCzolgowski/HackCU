@@ -392,16 +392,35 @@ class SimulationEngine:
         return cohort.nationality != "locals" and cohort.accommodation != "local_home" and cohort.arrival_day <= -1
 
     def _choose_departure_wave_start(self, rng: random.Random, cohort: Cohort) -> int:
-        options = [(16, 0.18), (18, 0.34), (20, 0.28), (22, 0.2)]
+        options = [
+            (self._step_for_clock(9, 0), 0.22),
+            (self._step_for_clock(11, 0), 0.36),
+            (self._step_for_clock(13, 0), 0.28),
+            (self._step_for_clock(15, 0), 0.14),
+        ]
         if cohort.transport_mode in {"dart", "rideshare"}:
-            options = [(step, weight * (1.14 if step <= 18 else 0.92)) for step, weight in options]
+            options = [(step, weight * (1.14 if step <= self._step_for_clock(11, 0) else 0.92)) for step, weight in options]
         if cohort.transport_mode == "car":
-            options = [(step, weight * (1.08 if step >= 20 else 0.96)) for step, weight in options]
+            options = [(step, weight * (1.08 if step >= self._step_for_clock(13, 0) else 0.96)) for step, weight in options]
         if cohort.alcohol_profile == "high":
-            options = [(step, weight * (1.18 if step >= 20 else 0.84)) for step, weight in options]
+            options = [(step, weight * (1.18 if step >= self._step_for_clock(13, 0) else 0.84)) for step, weight in options]
         if cohort.budget_cat <= 2:
-            options = [(step, weight * (1.12 if step <= 18 else 0.94)) for step, weight in options]
+            options = [(step, weight * (1.12 if step <= self._step_for_clock(11, 0) else 0.94)) for step, weight in options]
         return self._weighted_choice(rng, options)
+
+    def _choose_post_match_return_step(self, rng: random.Random, cohort: Cohort, match_end: int) -> int:
+        offsets = [(8, 0.24), (12, 0.34), (16, 0.26), (20, 0.16)]
+        if cohort.transport_mode in {"walk", "dart"}:
+            offsets = [(offset, weight * (1.12 if offset <= 12 else 0.9)) for offset, weight in offsets]
+        if cohort.transport_mode == "rideshare":
+            offsets = [(offset, weight * (1.08 if offset >= 12 else 0.94)) for offset, weight in offsets]
+        if cohort.transport_mode == "car":
+            offsets = [(offset, weight * (1.15 if offset >= 16 else 0.88)) for offset, weight in offsets]
+        if cohort.alcohol_profile == "high":
+            offsets = [(offset, weight * (1.16 if offset >= 16 else 0.85)) for offset, weight in offsets]
+        if cohort.nationality == "locals":
+            offsets = [(offset, weight * (1.18 if offset <= 12 else 0.84)) for offset, weight in offsets]
+        return min(self.steps_per_day - 4, match_end + self._weighted_choice(rng, offsets))
 
     def _step_for_clock(self, hour: int, minute: int = 0) -> int:
         total_minutes = hour * 60 + minute
@@ -453,7 +472,7 @@ class SimulationEngine:
                         "hotel",
                         self._intent_reference_step(4, 12),
                     ),
-                    0.38,
+                    0.4,
                 )
             )
         else:
@@ -490,7 +509,7 @@ class SimulationEngine:
                         "breakfast",
                         self._intent_reference_step(wake_step, breakfast_end),
                     ),
-                    0.28 if cohort.nationality != "locals" else 0.18,
+                    0.3 if cohort.nationality != "locals" else 0.18,
                 )
             )
 
@@ -544,7 +563,7 @@ class SimulationEngine:
                         "hotel",
                         self._intent_reference_step(46, 58),
                     ),
-                    0.26,
+                    0.28,
                 )
             )
             intents.append(
@@ -560,7 +579,7 @@ class SimulationEngine:
                         "hotel",
                         self._intent_reference_step(58, 80),
                     ),
-                    0.1,
+                    0.12,
                 )
             )
         else:
@@ -605,7 +624,7 @@ class SimulationEngine:
         pre_match_start = explore_end
         pre_match_end = self.kickoff_step
         match_end = self.final_whistle_step
-        post_match_end = min(self.steps_per_day - 6, match_end + 14)
+        return_wave_start = self._choose_post_match_return_step(rng, cohort, match_end)
 
         if cohort.nationality != "locals" and cohort.arrival_day == 0:
             intents.append(ActivityIntent("airport_zone", 0, 6, "arrival", None, 0.0))
@@ -622,7 +641,7 @@ class SimulationEngine:
                         "hotel",
                         self._intent_reference_step(6, 14),
                     ),
-                    0.41,
+                    0.47,
                 )
             )
             morning_end = 14
@@ -659,7 +678,7 @@ class SimulationEngine:
                         "breakfast",
                         self._intent_reference_step(wake_step, breakfast_end),
                     ),
-                    0.26 if cohort.nationality != "locals" else 0.18,
+                    0.32 if cohort.nationality != "locals" else 0.18,
                 )
             )
             morning_end = breakfast_end
@@ -678,7 +697,7 @@ class SimulationEngine:
                     "explore",
                     self._intent_reference_step(morning_end, explore_end),
                 ),
-                0.64,
+                0.68 if cohort.nationality != "locals" else 0.56,
             )
         )
 
@@ -690,14 +709,14 @@ class SimulationEngine:
                     pre_match_start,
                     pre_match_end,
                     "pre_match_bar",
-                    self._pick_business(
-                        rng,
-                        cohort,
-                        pre_match_zone,
-                        "prematch",
-                        self._intent_reference_step(pre_match_start, pre_match_end),
-                    ),
-                    0.91,
+                self._pick_business(
+                    rng,
+                    cohort,
+                    pre_match_zone,
+                    "prematch",
+                    self._intent_reference_step(pre_match_start, pre_match_end),
+                ),
+                    0.95,
                 )
             )
             intents.append(ActivityIntent("stadium_zone", pre_match_end, match_end, "match", None, 0.0))
@@ -716,7 +735,7 @@ class SimulationEngine:
                         "prematch",
                         self._intent_reference_step(pre_match_start, pre_match_end),
                     ),
-                    0.72,
+                    0.76,
                 )
             )
             intents.append(
@@ -732,7 +751,7 @@ class SimulationEngine:
                         "watch_party",
                         self._intent_reference_step(pre_match_end, match_end),
                     ),
-                    0.86,
+                    0.9,
                 )
             )
 
@@ -741,14 +760,14 @@ class SimulationEngine:
             ActivityIntent(
                 post_zone,
                 match_end,
-                post_match_end,
+                return_wave_start,
                 "celebration",
                 self._pick_business(
                     rng,
                     cohort,
                     post_zone,
                     "celebration",
-                    self._intent_reference_step(match_end, post_match_end),
+                    self._intent_reference_step(match_end, return_wave_start),
                 ),
                 0.82,
             )
@@ -756,7 +775,7 @@ class SimulationEngine:
         intents.append(
             ActivityIntent(
                 base_zone,
-                post_match_end,
+                return_wave_start,
                 80,
                 "overnight_stay" if self._is_overnight_traveler(cohort) else "return",
                 self._pick_business(
@@ -764,9 +783,9 @@ class SimulationEngine:
                     cohort,
                     base_zone,
                     "hotel",
-                    self._intent_reference_step(post_match_end, 80),
+                    self._intent_reference_step(return_wave_start, 80),
                 ),
-                0.3 if self._is_overnight_traveler(cohort) else 0.24,
+                0.46 if self._is_overnight_traveler(cohort) else 0.24,
             )
         )
         return intents
@@ -860,7 +879,8 @@ class SimulationEngine:
 
         if self._is_overnight_traveler(cohort):
             departure_wave_start = self._choose_departure_wave_start(rng, cohort)
-            airport_arrival_end = min(self.steps_per_day - 14, departure_wave_start + 20)
+            travel_span = self._weighted_choice(rng, [(14, 0.28), (18, 0.44), (22, 0.28)])
+            airport_arrival_end = min(self.steps_per_day - 10, departure_wave_start + travel_span)
             intents = [
                 ActivityIntent(
                     base_zone,
@@ -874,7 +894,7 @@ class SimulationEngine:
                         "hotel",
                         self._intent_reference_step(0, wake_step),
                     ),
-                    0.12,
+                    0.1,
                 ),
                 ActivityIntent(
                     base_zone,
@@ -888,7 +908,7 @@ class SimulationEngine:
                         "breakfast",
                         self._intent_reference_step(wake_step, departure_wave_start),
                     ),
-                    0.26,
+                    0.22,
                 ),
                 ActivityIntent("airport_zone", departure_wave_start, airport_arrival_end, "airport_departure", None, 0.0),
                 ActivityIntent("airport_zone", airport_arrival_end, 80, "departed", None, 0.0),
@@ -1042,8 +1062,11 @@ class SimulationEngine:
         weighted: list[tuple[str, float]] = []
         for business in candidates:
             weight = (business["rating"] * 0.8) + (business["capacity_estimate"] / 900)
-            if purpose in {"breakfast", "hotel", "check_in", "overnight_stay", "slow_checkout"} and business["type"] in {"hotel", "hotel_bar"}:
-                weight *= 1.75
+            if purpose in {"breakfast", "hotel", "check_in", "overnight_stay", "slow_checkout"}:
+                if business["type"] == "hotel":
+                    weight *= 1.95
+                elif business["type"] == "hotel_bar":
+                    weight *= 1.45
             if purpose in {"prematch", "celebration", "watch_party", "day_before_bar"} and business["type"] in {"sports_bar", "cocktail_bar", "hotel_bar"}:
                 weight *= 1.6
             if cohort.preferred_vibe == "sports_bar" and business["type"] == "sports_bar":
@@ -1308,8 +1331,13 @@ class SimulationEngine:
                     aggregates["businesses"][layer][business_id][step] = min(scaled, limit)
 
                 remaining = overflow
+                origin_business = self.businesses[business_id]
                 for target_id in self._candidate_spillover_targets(business_id):
                     target_business = self.businesses[target_id]
+                    if origin_business["type"] in {"sports_bar", "cocktail_bar", "restaurant"} and target_business["type"] == "hotel":
+                        continue
+                    if origin_business["type"] == "hotel" and target_business["type"] not in {"hotel", "hotel_bar", "restaurant"}:
+                        continue
                     if not self._is_business_open_at_step(target_business, step):
                         continue
                     target_total = aggregates["businesses"]["total"][target_id][step]

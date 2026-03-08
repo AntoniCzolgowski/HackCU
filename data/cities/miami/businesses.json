@@ -254,6 +254,36 @@
       "hours": "11:00-02:00",
       "source": "seeded_real",
       "signature_item": "airport-corridor watch parties"
+    },
+    {
+      "id": "biz_mia_fontainebleau",
+      "name": "Fontainebleau Miami Beach",
+      "type": "hotel",
+      "zone_id": "downtown_zone",
+      "node_id": "downtown_dallas",
+      "lat": 25.8192,
+      "lng": -80.1227,
+      "rating": 4.6,
+      "price_level": 4,
+      "capacity_estimate": 1320,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "destination-resort fan residency"
+    },
+    {
+      "id": "biz_mia_sls_brickell",
+      "name": "SLS Brickell",
+      "type": "hotel",
+      "zone_id": "uptown_zone",
+      "node_id": "uptown",
+      "lat": 25.7663,
+      "lng": -80.1945,
+      "rating": 4.4,
+      "price_level": 4,
+      "capacity_estimate": 760,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "post-match nightlife stay demand"
     }
   ]
 }

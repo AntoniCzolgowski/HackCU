@@ -25,8 +25,8 @@ class Settings:
     api_port: int = int(os.getenv("MATCHFLOW_API_PORT", "8000"))
     web_port: int = int(os.getenv("MATCHFLOW_WEB_PORT", "5173"))
     google_maps_api_key: str = os.getenv("GOOGLE_MAPS_API_KEY", "")
-    anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
-    anthropic_model: str = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
 
 
 settings = Settings()

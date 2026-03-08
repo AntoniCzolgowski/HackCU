@@ -269,6 +269,36 @@
       "hours": "11:00-23:00",
       "source": "seeded_real",
       "signature_item": "upscale pre-match dining"
+    },
+    {
+      "id": "biz_kc_crossroads_hotel",
+      "name": "Crossroads Hotel KC",
+      "type": "hotel",
+      "zone_id": "downtown_zone",
+      "node_id": "downtown_dallas",
+      "lat": 39.0913,
+      "lng": -94.5821,
+      "rating": 4.5,
+      "price_level": 4,
+      "capacity_estimate": 820,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "downtown supporter residency surge"
+    },
+    {
+      "id": "biz_kc_union_lobby",
+      "name": "Union Station Lobby Bar",
+      "type": "hotel_bar",
+      "zone_id": "downtown_zone",
+      "node_id": "downtown_dallas",
+      "lat": 39.0846,
+      "lng": -94.5859,
+      "rating": 4.3,
+      "price_level": 3,
+      "capacity_estimate": 460,
+      "hours": "14:00-01:00",
+      "source": "seeded_real",
+      "signature_item": "arrival-nightcap traveler wave"
     }
   ]
 }

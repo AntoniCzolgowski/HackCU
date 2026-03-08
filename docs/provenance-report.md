@@ -17,5 +17,5 @@ This demo is designed to stay runnable without live API keys while still making 
 ## Replaceable Layers
 
 - Weather defaults to a seeded hot-match profile and can be refreshed from Open-Meteo.
-- Business recommendation cards use deterministic heuristics until `ANTHROPIC_API_KEY` is supplied.
+- Business recommendation cards use deterministic heuristics until `GEMINI_API_KEY` is supplied.
 - Seed outputs are committed so the app still runs if live refresh fails or APIs are unavailable.

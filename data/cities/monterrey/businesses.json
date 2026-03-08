@@ -254,6 +254,36 @@
       "hours": "11:00-01:00",
       "source": "seeded_real",
       "signature_item": "business-district post-match crowd"
+    },
+    {
+      "id": "biz_mty_camino_real",
+      "name": "Camino Real Monterrey",
+      "type": "hotel",
+      "zone_id": "downtown_zone",
+      "node_id": "downtown_dallas",
+      "lat": 25.6595,
+      "lng": -100.3566,
+      "rating": 4.5,
+      "price_level": 4,
+      "capacity_estimate": 840,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "corporate-hosted supporter blocks"
+    },
+    {
+      "id": "biz_mty_presidente",
+      "name": "InterContinental Presidente",
+      "type": "hotel",
+      "zone_id": "las_colinas_zone",
+      "node_id": "las_colinas",
+      "lat": 25.6549,
+      "lng": -100.3478,
+      "rating": 4.4,
+      "price_level": 4,
+      "capacity_estimate": 780,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "late checkout outbound waves"
     }
   ]
 }

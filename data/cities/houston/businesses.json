@@ -269,6 +269,36 @@
       "hours": "24/7",
       "source": "seeded_real",
       "signature_item": "premium business-traveler arrivals"
+    },
+    {
+      "id": "biz_hou_post_oak",
+      "name": "The Post Oak Hotel",
+      "type": "hotel",
+      "zone_id": "las_colinas_zone",
+      "node_id": "las_colinas",
+      "lat": 29.7518,
+      "lng": -95.4588,
+      "rating": 4.6,
+      "price_level": 4,
+      "capacity_estimate": 1080,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "high-value VIP supporter blocks"
+    },
+    {
+      "id": "biz_hou_marriott_iah",
+      "name": "Marriott Airport Connector",
+      "type": "hotel",
+      "zone_id": "arlington_hotels_zone",
+      "node_id": "arlington_hotels",
+      "lat": 29.9591,
+      "lng": -95.3418,
+      "rating": 4.2,
+      "price_level": 3,
+      "capacity_estimate": 830,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "late-flight supporter check-ins"
     }
   ]
 }

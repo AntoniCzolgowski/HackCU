@@ -324,6 +324,24 @@ def _load_city_components(city_id: str) -> dict[str, Any]:
     }
 
 
+def _is_day_key(value: str) -> bool:
+    return value.lstrip("-").isdigit()
+
+
+def _resolve_weather_overrides(enrichment: dict[str, Any], city_id: str) -> dict[str, Any]:
+    raw = enrichment.get("weather_overrides", {})
+    if not isinstance(raw, dict):
+        return {}
+
+    city_payload = raw.get(city_id)
+    if isinstance(city_payload, dict):
+        return city_payload
+
+    if raw and all(isinstance(key, str) and _is_day_key(key) for key in raw):
+        return raw
+    return {}
+
+
 _seed_cache: dict[tuple[str, str], dict[str, Any]] = {}
 
 
@@ -346,7 +364,7 @@ def load_seed_bundle(city_id: str | None = None, match_id: str | None = None) ->
 
     if LIVE_ENRICHMENT_PATH.exists():
         enrichment = load_json(LIVE_ENRICHMENT_PATH)
-        weather_overrides = enrichment.get("weather_overrides", {}).get(selected_city_id, {})
+        weather_overrides = _resolve_weather_overrides(enrichment, selected_city_id)
         for day_key, overrides in weather_overrides.items():
             if day_key in payload["weather"]:
                 payload["weather"][day_key].update(overrides)

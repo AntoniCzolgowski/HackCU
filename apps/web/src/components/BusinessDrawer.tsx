@@ -5,6 +5,8 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
+  Line,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -114,25 +116,60 @@ function buildInventoryGuide(detail: BusinessDetailResponse, match: MatchMeta) {
 
   const mix = detail.nationality_mix;
   const dominant = Object.entries(mix).sort((a, b) => b[1] - a[1])[0];
-  const dominantLabel = dominant[0] === "team_a" ? match.home_team.name : dominant[0] === "team_b" ? match.away_team.name : dominant[0] === "locals" ? "local" : "neutral";
+  const dominantSegment = dominant?.[0] ?? "neutral";
+  const dominantLabel =
+    dominantSegment === "team_a"
+      ? match.home_team.name
+      : dominantSegment === "team_b"
+        ? match.away_team.name
+        : dominantSegment === "locals"
+          ? "Locals"
+          : "Neutral";
+  const culturalNote =
+    match.cultural_notes?.[dominantSegment] ??
+    "Plan flexible service bundles and visible fast-order options for this segment.";
 
-  return { totalDrinks, totalFood, beers, cocktails, softDrinks, waterBottles, dominantLabel };
+  return { totalDrinks, totalFood, beers, cocktails, softDrinks, waterBottles, dominantLabel, culturalNote };
 }
 
 /* ── CSV Export ──────────────────────────────────────── */
+function toCsvCell(value: string | number | null | undefined): string {
+  const text = String(value ?? "");
+  if (!/[",\n]/.test(text)) return text;
+  return `"${text.replace(/"/g, "\"\"")}"`;
+}
+
+function slugify(value: string): string {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "venue"
+  );
+}
+
 function downloadCSV(detail: BusinessDetailResponse, match: MatchMeta) {
-  const header = "Time,Active Visitors,Marker\n";
-  const rows = detail.active_visitors_series_15m.map((p) => `${p.label},${p.value},${p.marker ?? ""}`).join("\n");
-  const summary =
-    `\n\nSummary\nVenue,"${detail.business.name}"\nType,${detail.business.type}\n` +
-    `Match,"${match.title}"\nServed Visits,${detail.served_visits_today}\n` +
-    `Revenue Estimate,$${detail.served_revenue.total}\nPeak Time,${detail.peak.label}\n` +
-    `Peak Visitors,${detail.peak_active_visitors}\nPeak Capacity %,${detail.peak_capacity_pct_capped}\n`;
-  const blob = new Blob([header + rows + summary], { type: "text/csv" });
+  const rows: Array<Array<string | number>> = [
+    ["Time", "Active Visitors", "Marker"],
+    ...detail.active_visitors_series_15m.map((point) => [point.label, point.value, point.marker ?? ""]),
+    [],
+    ["Summary"],
+    ["Venue", detail.business.name],
+    ["Type", detail.business.type],
+    ["Match", match.title],
+    ["Served Visits", detail.served_visits_today],
+    ["Revenue Estimate", detail.served_revenue.total],
+    ["Peak Time", detail.peak.label],
+    ["Peak Visitors", detail.peak_active_visitors],
+    ["Peak Capacity %", detail.peak_capacity_pct_capped],
+  ];
+  const csv = rows.map((row) => row.map((cell) => toCsvCell(cell)).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `${detail.business.name.replace(/\s+/g, "_")}_matchflow.csv`;
+  a.download = `${slugify(detail.business.name)}-${match.match_id}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -170,10 +207,24 @@ function ExplanationPanel({
   );
 }
 
+function HoverHint({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="metric-explanation-shell">
+      <button type="button" className="info-button" aria-label={`Explain ${title}`}>
+        ?
+      </button>
+      <div className="metric-explanation-popover" role="tooltip">
+        <strong>{title}</strong>
+        <p>{body}</p>
+      </div>
+    </div>
+  );
+}
+
 export function BusinessDrawer({
   detail,
   comparison,
-  opportunityBoard,
+  opportunityBoard: opportunityBoardInput,
   match,
   isLoading,
   metricFilters,
@@ -185,6 +236,7 @@ export function BusinessDrawer({
   const demandChartRows = useMemo(() => buildDemandChartRows(detail), [detail]);
   const isMatchDay = detail?.day === 0;
   const [boardSort, setBoardSort] = useState<"score" | "revenue" | "risk">("score");
+  const opportunityBoard = opportunityBoardInput as OpportunityBoardResponse;
 
   const fanMixRows = useMemo(() => {
     if (!detail) return [];
@@ -220,9 +272,18 @@ export function BusinessDrawer({
     return matches;
   }, [opportunityBoard, boardSort]);
 
+  const boardRevenueRiskRows = useMemo(
+    () =>
+      sortedBoardMatches.map((row) => ({
+        ...row,
+        risk_pct: Math.round(row.score_breakdown.risk_index * 100),
+      })),
+    [sortedBoardMatches],
+  );
+
   if (!detail && !isLoading) {
     return (
-      <aside className="panel drawer">
+      <aside className="panel drawer cinematic-crossfade">
         <div className="section-header">
           <h2>Venue intelligence</h2>
         </div>
@@ -233,7 +294,7 @@ export function BusinessDrawer({
 
   if (!detail || isLoading) {
     return (
-      <aside className="panel drawer">
+      <aside className="panel drawer cinematic-crossfade">
         <div className="section-header">
           <h2>Venue intelligence</h2>
         </div>
@@ -246,7 +307,7 @@ export function BusinessDrawer({
   }
 
   return (
-    <aside className="panel drawer">
+    <aside className="panel drawer cinematic-crossfade">
       <div className="section-header">
         <div>
           <h2>{detail.business.name}</h2>
@@ -341,7 +402,13 @@ export function BusinessDrawer({
       {/* ── Staffing Calculator ──────────────────────── */}
       {metricFilters.capacity && staffingPlan.length > 0 ? (
         <div className="chart-card fade-in-up">
-          <h3>Staffing calculator</h3>
+          <div className="chart-header">
+            <h3>Staffing calculator</h3>
+            <HoverHint
+              title="Staffing calculator"
+              body="Hourly staffing recommendation derived from the 15-minute active-visitor series and venue-type service ratio."
+            />
+          </div>
           <p className="chart-footnote">Recommended staff count per hour based on peak visitor load and venue type ratio (1:{Math.round(1 / (STAFF_RATIOS[detail.business.type] ?? 1 / 14))}).</p>
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={staffingPlan} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}>
@@ -447,7 +514,13 @@ export function BusinessDrawer({
       {/* ── Inventory Prep Guide ─────────────────────── */}
       {metricFilters.revenue && inventoryGuide ? (
         <article className="recommendation-card fade-in-up" style={{ animationDelay: "80ms" }}>
-          <p className="eyebrow">Inventory prep guide</p>
+          <div className="chart-header">
+            <p className="eyebrow" style={{ marginBottom: 0 }}>Inventory prep guide</p>
+            <HoverHint
+              title="Inventory prep guide"
+              body="Forecasted stock volumes based on expected served visits, venue type consumption profile, and dominant fan mix."
+            />
+          </div>
           <div className="inventory-grid">
             <div className="inventory-item">
               <strong>{inventoryGuide.beers.toLocaleString()}</strong>
@@ -475,7 +548,7 @@ export function BusinessDrawer({
             </div>
           </div>
           <p className="fan-mix-insight" style={{ marginTop: 10 }}>
-            Dominant fan group: {inventoryGuide.dominantLabel}. Bias beer selection and menu specials toward this audience.
+            Dominant fan group: {inventoryGuide.dominantLabel}. {inventoryGuide.culturalNote}
           </p>
         </article>
       ) : null}
@@ -545,28 +618,196 @@ export function BusinessDrawer({
         </>
       ) : null}
 
-      {/* ── Opportunity Board ────────────────────────── */}
       {metricFilters.competition && opportunityBoard && opportunityBoard.matches.length > 0 ? (
+        <div className="chart-card board-card fade-in-up">
+          <div className="chart-header">
+            <h3>Consulting Opportunity Board</h3>
+          </div>
+
+          <div className="board-kpi-strip">
+            <div className="board-kpi glow-accent">
+              <div className="board-kpi-head">
+                <span>Best Match</span>
+                <HoverHint title="Best match" body="Highest opportunity score after balancing revenue upside and execution risk." />
+              </div>
+              <strong title="Highest balanced opportunity in this city">
+                {opportunityBoard.matches.find((m) => m.match_id === opportunityBoard.portfolio_summary.best_match_id)?.title ?? "—"}
+              </strong>
+            </div>
+            <div className="board-kpi">
+              <div className="board-kpi-head">
+                <span>Avg Score</span>
+                <HoverHint title="Average score" body="Mean opportunity score across all matches for this business in the city." />
+              </div>
+              <strong title="Average portfolio opportunity">{opportunityBoard.portfolio_summary.avg_opportunity_score}</strong>
+            </div>
+            <div className="board-kpi">
+              <div className="board-kpi-head">
+                <span>Volatility</span>
+                <HoverHint title="Volatility index" body="Difference between strongest and weakest opportunity in this portfolio." />
+              </div>
+              <strong title="Score spread across matches">{opportunityBoard.portfolio_summary.volatility_index}</strong>
+            </div>
+            <div className="board-kpi">
+              <div className="board-kpi-head">
+                <span>Risk Exp.</span>
+                <HoverHint title="Risk exposure" body="Share of matches with elevated relative risk for this business." />
+              </div>
+              <strong title="Portfolio share of elevated-risk matches">{opportunityBoard.portfolio_summary.risk_exposure_pct}%</strong>
+            </div>
+            <div className="board-kpi">
+              <div className="board-kpi-head">
+                <span>Exec Pressure</span>
+                <HoverHint title="Execution pressure" body="Queue and spillover pressure translated into operational intensity." />
+              </div>
+              <strong title="Higher means heavier staffing and throughput pressure">{opportunityBoard.portfolio_summary.execution_pressure}</strong>
+            </div>
+            <div className="board-kpi">
+              <div className="board-kpi-head">
+                <span>Stability</span>
+                <HoverHint title="Stability score" body="Confidence-weighted consistency. Higher means easier planning and fewer surprises." />
+              </div>
+              <strong title="Higher means more predictable execution">{opportunityBoard.portfolio_summary.stability_score}</strong>
+            </div>
+          </div>
+
+          <div className="board-sort-row">
+            {(["score", "revenue", "risk"] as const).map((key) => (
+              <button key={key} type="button" className={boardSort === key ? "compact-chip active" : "compact-chip"} onClick={() => setBoardSort(key)}>
+                {key === "score" ? "Score" : key === "revenue" ? "Revenue" : "Risk"}
+              </button>
+            ))}
+          </div>
+
+          <ResponsiveContainer width="100%" height={Math.max(140, sortedBoardMatches.length * 36)}>
+            <BarChart data={sortedBoardMatches} layout="vertical" margin={{ left: 10, right: 8 }}>
+              <XAxis type="number" domain={[0, 100]} hide />
+              <YAxis type="category" dataKey="title" width={110} stroke="#94a3b8" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} />
+              <Tooltip
+                contentStyle={{ borderRadius: 14, border: "1px solid rgba(148,163,184,0.25)", background: "#fff", color: "#0f172a" }}
+                formatter={(value, _name, props) => {
+                  const payload = (props as unknown as { payload: { quick_recommendation: string; revenue_estimate: number; peak_capacity_pct: number } }).payload;
+                  return [`Score: ${value} | Rev: $${payload.revenue_estimate.toLocaleString()} | Cap: ${payload.peak_capacity_pct}%`, payload.quick_recommendation];
+                }}
+              />
+              <Bar dataKey="opportunity_score" radius={[0, 8, 8, 0]} maxBarSize={20}>
+                {sortedBoardMatches.map((row) => (
+                  <Cell key={row.match_id} fill={row.quick_recommendation === "Push" ? "#22C55E" : row.quick_recommendation === "Hold" ? "#F97316" : "#94A3B8"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+
+          <div className="board-legend">
+            <span><i style={{ background: "#22C55E" }} />Push</span>
+            <span><i style={{ background: "#F97316" }} />Hold</span>
+            <span><i style={{ background: "#94A3B8" }} />Avoid</span>
+          </div>
+
+          <div className="board-reco-list">
+            {sortedBoardMatches.map((row) => (
+              <div key={row.match_id} className={`board-reco-item reco-${row.quick_recommendation.toLowerCase()}`}>
+                <span>{row.title}</span>
+                <strong>{row.quick_recommendation}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="board-combo-shell">
+            <div className="chart-header">
+              <h3>Revenue vs Risk Overlay</h3>
+              <HoverHint
+                title="Revenue vs risk"
+                body="Dual-axis view: bars are revenue potential, line is relative risk. Favor high bars with lower risk line."
+              />
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <ComposedChart data={boardRevenueRiskRows} margin={{ top: 10, right: 8, left: -14, bottom: 16 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#203046" />
+                <XAxis
+                  dataKey="title"
+                  stroke="#cbd5e1"
+                  tickLine={false}
+                  axisLine={false}
+                  interval={0}
+                  height={56}
+                  tick={{ fontSize: 10 }}
+                  angle={-30}
+                  textAnchor="end"
+                />
+                <YAxis
+                  yAxisId="revenue"
+                  stroke="#cbd5e1"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 10 }}
+                  tickFormatter={(value) => `$${formatCompact(Number(value ?? 0))}`}
+                />
+                <YAxis
+                  yAxisId="risk"
+                  orientation="right"
+                  domain={[0, 100]}
+                  stroke="#fca5a5"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 10 }}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <Tooltip
+                  contentStyle={{ borderRadius: 14, border: "1px solid rgba(148,163,184,0.25)", background: "#fff", color: "#0f172a" }}
+                  formatter={(value, name, props) => {
+                    if (name === "risk_pct") {
+                      return [`${value}%`, "Relative risk"];
+                    }
+                    const payload = (props as unknown as { payload: { quick_recommendation: string } }).payload;
+                    return [`$${Number(value ?? 0).toLocaleString()}`, `Revenue | ${payload.quick_recommendation}`];
+                  }}
+                />
+                <Bar yAxisId="revenue" dataKey="revenue_estimate" radius={[6, 6, 0, 0]} maxBarSize={24}>
+                  {boardRevenueRiskRows.map((row) => (
+                    <Cell key={row.match_id} fill={row.quick_recommendation === "Push" ? "#22C55E" : row.quick_recommendation === "Hold" ? "#38BDF8" : "#64748B"} />
+                  ))}
+                </Bar>
+                <Line
+                  yAxisId="risk"
+                  type="monotone"
+                  dataKey="risk_pct"
+                  stroke="#F43F5E"
+                  strokeWidth={2.5}
+                  dot={{ fill: "#F43F5E", r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      ) : null}
+
+      {/* ── Opportunity Board ────────────────────────── */}
+      {false && metricFilters.competition && (opportunityBoard?.matches.length ?? 0) > 0 ? (
         <div className="chart-card board-card fade-in-up">
           <div className="chart-header">
             <h3>Consulting Opportunity Board</h3>
           </div>
           <div className="board-kpi-strip">
             <div className="board-kpi glow-accent">
-              <span>Best Match</span>
+              <div className="board-kpi-head">
+                <span>Best Match</span>
+                <HoverHint title="Best match" body="Highest opportunity score after balancing revenue upside and execution risk." />
+              </div>
               <strong>{opportunityBoard.matches.find((m) => m.match_id === opportunityBoard.portfolio_summary.best_match_id)?.title ?? "—"}</strong>
             </div>
             <div className="board-kpi">
               <span>Avg Score</span>
-              <strong>{opportunityBoard.portfolio_summary.avg_opportunity_score}</strong>
+              <strong>{opportunityBoard!.portfolio_summary.avg_opportunity_score}</strong>
             </div>
             <div className="board-kpi">
               <span>Volatility</span>
-              <strong>{opportunityBoard.portfolio_summary.volatility_index}</strong>
+              <strong>{opportunityBoard!.portfolio_summary.volatility_index}</strong>
             </div>
             <div className="board-kpi">
               <span>Risk Exp.</span>
-              <strong>{opportunityBoard.portfolio_summary.risk_exposure_pct}%</strong>
+              <strong>{opportunityBoard!.portfolio_summary.risk_exposure_pct}%</strong>
             </div>
           </div>
 

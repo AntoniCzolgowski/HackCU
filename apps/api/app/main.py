@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from .schemas import ReportRequest, WhatIfRequest
-from .service import MatchFlowService
+from .service import InvalidInputError, MatchFlowService, NotFoundError
 
 
 app = FastAPI(title="MatchFlow World Cup API", version="0.2.0")
@@ -21,7 +21,11 @@ service = MatchFlowService()
 
 
 def _raise_http_from_value_error(error: ValueError) -> None:
-    raise HTTPException(status_code=404, detail=str(error)) from error
+    if isinstance(error, InvalidInputError):
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    if isinstance(error, NotFoundError):
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    raise HTTPException(status_code=422, detail=str(error)) from error
 
 
 @app.get("/api/health")

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from io import BytesIO
+import math
 from pathlib import Path
 from typing import Any
 
@@ -49,6 +50,17 @@ AXIS_COLOR = "#4B617A"
 
 FONT = "Helvetica"
 FONT_B = "Helvetica-Bold"
+
+STAFF_RATIOS = {
+    "restaurant": 1 / 12,
+    "sports_bar": 1 / 15,
+    "cocktail_bar": 1 / 10,
+    "hotel_bar": 1 / 12,
+    "hotel": 1 / 20,
+}
+DRINK_RATIOS = {"restaurant": 1.2, "sports_bar": 2.5, "cocktail_bar": 2.0, "hotel_bar": 1.8, "hotel": 0.8}
+FOOD_RATIOS = {"restaurant": 0.85, "sports_bar": 0.4, "cocktail_bar": 0.2, "hotel_bar": 0.3, "hotel": 0.5}
+BEER_SHARE = {"restaurant": 0.5, "sports_bar": 0.7, "cocktail_bar": 0.3, "hotel_bar": 0.4, "hotel": 0.4}
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
@@ -87,6 +99,55 @@ def _fmt_number(v: float | int) -> str:
 
 def _fmt_pct(v: float | int) -> str:
     return f"{float(v):.0f}%"
+
+
+def _staffing_plan(detail: dict[str, Any]) -> list[dict[str, Any]]:
+    ratio = STAFF_RATIOS.get(detail["business"]["type"], 1 / 14)
+    series = detail.get("active_visitors_series_15m", [])
+    rows: list[dict[str, Any]] = []
+    for index in range(0, len(series), 4):
+        chunk = series[index : index + 4]
+        if not chunk:
+            continue
+        peak = max(int(point.get("value", 0)) for point in chunk)
+        staff = max(1, int(math.ceil(peak * ratio)))
+        rows.append({"label": chunk[0].get("label", ""), "peak": peak, "staff": staff})
+    return rows
+
+
+def _inventory_guide(detail: dict[str, Any], match: dict[str, Any]) -> dict[str, Any]:
+    venue_type = detail["business"]["type"]
+    visitors = int(detail.get("served_visits_today", 0))
+    total_drinks = max(0, int(round(visitors * DRINK_RATIOS.get(venue_type, 1.5))))
+    total_food = max(0, int(round(visitors * FOOD_RATIOS.get(venue_type, 0.5))))
+    beer_pct = BEER_SHARE.get(venue_type, 0.5)
+    beers = int(round(total_drinks * beer_pct))
+    cocktails = int(round(total_drinks * max(0.0, 1 - beer_pct - 0.15)))
+    soft_drinks = max(0, total_drinks - beers - cocktails)
+    water = max(0, int(round(visitors * 0.6)))
+
+    mix = detail.get("nationality_mix", {})
+    dominant_key = max(mix, key=mix.get) if mix else "neutral"
+    dominant_label = {
+        "team_a": match["home_team"]["name"],
+        "team_b": match["away_team"]["name"],
+        "locals": "Locals",
+        "neutral": "Neutral fans",
+    }.get(dominant_key, str(dominant_key).title())
+    note = match.get("cultural_notes", {}).get(
+        dominant_key,
+        "Plan flexible service bundles and clear fast-order signage for mixed fan groups.",
+    )
+
+    return {
+        "beers": beers,
+        "cocktails": cocktails,
+        "soft_drinks": soft_drinks,
+        "water_bottles": water,
+        "food_portions": total_food,
+        "dominant_label": dominant_label,
+        "note": note,
+    }
 
 
 # ── Canvas primitives ─────────────────────────────────────────────────────
@@ -434,6 +495,89 @@ def _section_capacity_gauge(cur: _PageCursor, detail: dict) -> None:
     cur.y = y - 8
 
 
+def _section_capacity_alert(cur: _PageCursor, detail: dict) -> None:
+    pct = float(detail.get("peak_capacity_pct_capped", 0))
+    if pct < 85:
+        return
+
+    h = 56
+    cur.ensure(h + 8)
+    x, y, w = MARGIN, cur.y - h, CONTENT_W
+    is_danger = pct >= 100
+    fill = "#2A1219" if is_danger else "#2A1A10"
+    stroke = "#5A1F35" if is_danger else "#5B3417"
+    title = "Capacity warning" if is_danger else "Capacity heads-up"
+    body = (
+        f"Projected to reach {_fmt_pct(pct)} at {detail['peak']['label']}. "
+        + ("Expect queues and spillover. Pre-batch top SKUs and deploy line control." if is_danger else "Prepare fast service lanes for the peak window.")
+    )
+
+    _card(cur.c, x, y, w, h, fill=fill, stroke=stroke)
+    _text(cur.c, x + CARD_PAD, y + h - 20, title.upper(), font=FONT_B, size=8, color="#FDBA74" if not is_danger else "#FECACA")
+    _multiline(cur.c, body, x + CARD_PAD, y + h - 34, w - CARD_PAD * 2, size=9, color="#F8FAFC", leading=11)
+    cur.y = y - 8
+
+
+def _section_staffing(cur: _PageCursor, detail: dict) -> None:
+    plan = _staffing_plan(detail)
+    if not plan:
+        return
+
+    top_rows = sorted(plan, key=lambda item: item["staff"], reverse=True)[:6]
+    h = 46 + len(top_rows) * 16 + 30
+    cur.ensure(h + 8)
+    x, y, w = MARGIN, cur.y - h, CONTENT_W
+    _card(cur.c, x, y, w, h)
+    _text(cur.c, x + CARD_PAD, y + h - 22, "Staffing calculator", font=FONT_B, size=13, color=TEXT_PRIMARY)
+
+    max_staff = max(row["staff"] for row in top_rows) or 1
+    row_y = y + h - 42
+    bar_left = x + CARD_PAD + 92
+    bar_w = w - CARD_PAD * 2 - 180
+    for row in top_rows:
+        _text(cur.c, x + CARD_PAD, row_y, row["label"], size=9, color=TEXT_SECONDARY)
+        _bar_h(cur.c, bar_left, row_y, bar_w, 8, row["staff"] / max_staff, ACCENT2)
+        _text_right(cur.c, x + w - CARD_PAD, row_y, f"{row['staff']} staff", font=FONT_B, size=9, color=TEXT_PRIMARY)
+        row_y -= 16
+
+    peak_row = max(plan, key=lambda item: item["staff"])
+    _text(
+        cur.c,
+        x + CARD_PAD,
+        y + 10,
+        f"Peak staffing hour: {peak_row['label']} ({peak_row['staff']} staff). Ratio baseline: 1:{round(1 / STAFF_RATIOS.get(detail['business']['type'], 1 / 14))}.",
+        size=8,
+        color=TEXT_MUTED,
+    )
+    cur.y = y - 8
+
+
+def _section_inventory(cur: _PageCursor, detail: dict, match: dict) -> None:
+    inv = _inventory_guide(detail, match)
+    h = 88
+    cur.ensure(h + 8)
+    x, y, w = MARGIN, cur.y - h, CONTENT_W
+    _card(cur.c, x, y, w, h)
+    _text(cur.c, x + CARD_PAD, y + h - 22, "Inventory prep guide", font=FONT_B, size=13, color=TEXT_PRIMARY)
+
+    columns = [
+        ("Beers", inv["beers"]),
+        ("Cocktails", inv["cocktails"]),
+        ("Soft drinks", inv["soft_drinks"]),
+        ("Water bottles", inv["water_bottles"]),
+        ("Food portions", inv["food_portions"]),
+    ]
+    col_w = (w - CARD_PAD * 2) / len(columns)
+    for index, (label, value) in enumerate(columns):
+        cx = x + CARD_PAD + index * col_w
+        _text(cur.c, cx, y + h - 44, label.upper(), font=FONT_B, size=7, color=TEXT_MUTED)
+        _text(cur.c, cx, y + h - 58, _fmt_number(value), font=FONT_B, size=12, color=ACCENT2)
+
+    note = f"Dominant fan segment: {inv['dominant_label']}. {inv['note']}"
+    _multiline(cur.c, note, x + CARD_PAD, y + 16, w - CARD_PAD * 2, size=8, color=TEXT_MUTED, leading=10)
+    cur.y = y - 8
+
+
 def _section_revenue(cur: _PageCursor, detail: dict) -> None:
     rev = detail.get("served_revenue", {})
     if not rev:
@@ -684,6 +828,72 @@ def _section_peers_and_comparison(cur: _PageCursor, detail: dict, comparison: di
     cur.y = y - 10
 
 
+def _section_opportunity_board(cur: _PageCursor, opportunity_board: dict[str, Any] | None) -> None:
+    if not opportunity_board:
+        return
+    matches = opportunity_board.get("matches", [])
+    if not matches:
+        return
+
+    summary = opportunity_board.get("portfolio_summary", {})
+    top_rows = sorted(matches, key=lambda item: item.get("opportunity_score", 0), reverse=True)[:5]
+    h = 150 + len(top_rows) * 18
+    cur.ensure(h + 8)
+    x, y, w = MARGIN, cur.y - h, CONTENT_W
+    _card(cur.c, x, y, w, h, fill="#0F1C2B", stroke="#20415D")
+    _text(cur.c, x + CARD_PAD, y + h - 22, "Consulting Opportunity Board", font=FONT_B, size=13, color=TEXT_PRIMARY)
+
+    kpis = [
+        ("Best match", summary.get("best_match_id", "n/a")),
+        ("Avg score", str(summary.get("avg_opportunity_score", "n/a"))),
+        ("Volatility", str(summary.get("volatility_index", "n/a"))),
+        ("Risk exposure", f"{summary.get('risk_exposure_pct', 'n/a')}%"),
+        ("Execution pressure", str(summary.get("execution_pressure", "n/a"))),
+        ("Stability", str(summary.get("stability_score", "n/a"))),
+    ]
+    cols = 3
+    box_w = (w - CARD_PAD * 2 - (cols - 1) * 8) / cols
+    box_h = 34
+    for index, (label, value) in enumerate(kpis):
+        row = index // cols
+        col = index % cols
+        bx = x + CARD_PAD + col * (box_w + 8)
+        by = y + h - 62 - row * (box_h + 6)
+        _card(cur.c, bx, by, box_w, box_h, fill="#102436", stroke="#2A4A66")
+        _text(cur.c, bx + 8, by + box_h - 12, label.upper(), font=FONT_B, size=6, color=TEXT_MUTED)
+        _text(cur.c, bx + 8, by + 8, str(value), font=FONT_B, size=9, color=TEXT_PRIMARY)
+
+    table_top = y + h - 110
+    _text(cur.c, x + CARD_PAD, table_top, "Top matches by opportunity score", font=FONT_B, size=9, color=TEXT_SECONDARY)
+    row_y = table_top - 16
+    for row in top_rows:
+        score = float(row.get("opportunity_score", 0))
+        recommendation = row.get("quick_recommendation", "Hold")
+        rec_color = OK if recommendation == "Push" else ACCENT if recommendation == "Hold" else TEXT_MUTED
+        cur.c.setStrokeColor(HexColor("#203B55"))
+        cur.c.line(x + CARD_PAD, row_y - 4, x + w - CARD_PAD, row_y - 4)
+        _text(cur.c, x + CARD_PAD, row_y + 1, str(row.get("title", ""))[:34], font=FONT_B, size=8, color=TEXT_PRIMARY)
+        _text_right(cur.c, x + w - CARD_PAD - 150, row_y + 1, _fmt_money(row.get("revenue_estimate", 0)), size=8, color=TEXT_SECONDARY)
+        _text_right(cur.c, x + w - CARD_PAD - 74, row_y + 1, f"Risk {int(round(row.get('score_breakdown', {}).get('risk_index', 0) * 100))}%", size=8, color="#FCA5A5")
+        _text_right(cur.c, x + w - CARD_PAD, row_y + 1, f"{score:.1f} {recommendation}", font=FONT_B, size=8, color=rec_color)
+        row_y -= 18
+
+    focus = summary.get("recommended_focus_match_ids", [])
+    if focus:
+        _multiline(
+            cur.c,
+            f"Recommended focus set: {', '.join(str(item) for item in focus[:3])}",
+            x + CARD_PAD,
+            y + 12,
+            w - CARD_PAD * 2,
+            size=7,
+            color=TEXT_MUTED,
+            leading=9,
+        )
+
+    cur.y = y - 8
+
+
 def _section_day_comparison(cur: _PageCursor, detail: dict) -> None:
     days = detail.get("day_comparison", [])
     if not days:
@@ -753,6 +963,7 @@ def build_business_report_pdf(
     match: dict[str, Any],
     detail: dict[str, Any],
     comparison: dict[str, Any],
+    opportunity_board: dict[str, Any] | None,
     visible_sections: dict[str, bool],
     output_path: Path,
 ) -> None:
@@ -773,10 +984,13 @@ def build_business_report_pdf(
     _section_stats(cur, detail)
 
     if vs.get("capacity", True):
+        _section_capacity_alert(cur, detail)
         _section_capacity_gauge(cur, detail)
+        _section_staffing(cur, detail)
 
     if vs.get("revenue", True):
         _section_revenue(cur, detail)
+        _section_inventory(cur, detail, match)
 
     if vs.get("demand", True):
         _section_demand_chart(cur, detail, match)
@@ -788,6 +1002,7 @@ def build_business_report_pdf(
 
     if vs.get("competition", True):
         _section_peers_and_comparison(cur, detail, comparison)
+        _section_opportunity_board(cur, opportunity_board)
 
     if vs.get("demand", True):
         _section_day_comparison(cur, detail)

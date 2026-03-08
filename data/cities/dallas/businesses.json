@@ -449,6 +449,36 @@
       "hours": "11:00-02:00",
       "source": "seeded_real",
       "signature_item": "airport-corridor happy-hour spike"
+    },
+    {
+      "id": "biz_four_seasons_lc",
+      "name": "The Las Colinas Resort",
+      "type": "hotel",
+      "zone_id": "las_colinas_zone",
+      "node_id": "las_colinas",
+      "lat": 32.8786,
+      "lng": -96.9448,
+      "rating": 4.6,
+      "price_level": 4,
+      "capacity_estimate": 1180,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "premium pre-arrival package demand"
+    },
+    {
+      "id": "biz_uptown_crescent",
+      "name": "Crescent Court Dallas",
+      "type": "hotel",
+      "zone_id": "uptown_zone",
+      "node_id": "uptown",
+      "lat": 32.7944,
+      "lng": -96.8049,
+      "rating": 4.5,
+      "price_level": 4,
+      "capacity_estimate": 860,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "late-night supporter stayovers"
     }
   ]
 }

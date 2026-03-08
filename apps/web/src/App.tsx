@@ -126,6 +126,7 @@ export default function App() {
       setBusinessDetail(null);
       setZoneDetail(null);
       setBusinessComparison(null);
+      setOpportunityBoard(null);
       setBootProgress(100);
       setBootPhase("Schedule preview");
       return;
@@ -136,6 +137,7 @@ export default function App() {
     setBusinessDetail(null);
     setZoneDetail(null);
     setBusinessComparison(null);
+    setOpportunityBoard(null);
     setSelectedEntity(null);
     setSelectedDay(INITIAL_DAY);
     setSelectedStep(INITIAL_STEP);
@@ -195,6 +197,7 @@ export default function App() {
       setBusinessDetail(null);
       setZoneDetail(null);
       setBusinessComparison(null);
+      setOpportunityBoard(null);
       return;
     }
 
@@ -203,6 +206,9 @@ export default function App() {
     setReportState({ isGenerating: false, status: null, job: null });
 
     if (selectedEntity.type === "business") {
+      setZoneDetail(null);
+      setBusinessComparison(null);
+      setOpportunityBoard(null);
       fetchBusiness({
         businessId: selectedEntity.id,
         day: selectedDay,
@@ -241,6 +247,9 @@ export default function App() {
           if (!cancelled) setOpportunityBoard(null);
         });
     } else {
+      setBusinessDetail(null);
+      setBusinessComparison(null);
+      setOpportunityBoard(null);
       fetchZone({
         zoneId: selectedEntity.id,
         day: selectedDay,
@@ -377,6 +386,7 @@ export default function App() {
 
   const rightPanel = !meta ? null : !selectedEntity || selectedEntity.type === "business" || businessDetail ? (
     <BusinessDrawer
+      key={`business-${selectedCityId}-${selectedMatchId ?? "none"}-${selectedEntity?.id ?? "none"}`}
       detail={businessDetail}
       comparison={businessComparison}
       opportunityBoard={opportunityBoard}
@@ -389,7 +399,13 @@ export default function App() {
       reportState={{ isGenerating: reportState.isGenerating, status: reportState.status }}
     />
   ) : (
-    <ZoneDrawer detail={zoneDetail} match={meta.match} isLoading={entityLoading} onJumpToStep={handleJumpToStep} />
+    <ZoneDrawer
+      key={`zone-${selectedCityId}-${selectedMatchId ?? "none"}-${selectedEntity?.id ?? "none"}`}
+      detail={zoneDetail}
+      match={meta.match}
+      isLoading={entityLoading}
+      onJumpToStep={handleJumpToStep}
+    />
   );
 
   if (isBooting) {
@@ -431,7 +447,7 @@ export default function App() {
         }) as MetaResponse["match"]}
         timeLabel={deferredSnapshot?.time_label ?? "Schedule preview"}
         scenarioId={selectedScenario}
-        sourceAvailability={meta?.source_availability ?? { google_places: false, anthropic: false, baseline_seed: true }}
+        sourceAvailability={meta?.source_availability ?? { google_places: false, gemini: false, llm_recommendations: false, baseline_seed: true }}
         onOpenProvenance={handleOpenProvenance}
       />
 

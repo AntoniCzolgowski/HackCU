@@ -56,3 +56,61 @@ def test_match_day_bars_do_not_fill_before_opening_time() -> None:
 
     assert max(happiest_hour[: engine._step_for_clock(11, 0)]) == 0
     assert max(texas_live[: engine._step_for_clock(10, 0)]) == 0
+
+
+def test_hotels_follow_preload_matchday_fill_and_departure_waves() -> None:
+    engine = SimulationEngine(load_seed_bundle(city_id="dallas", match_id=DEFAULT_MATCH_ID))
+    scenario = engine.generate_scenario(scenario_id="hotel-wave-realism")
+
+    hotel_ids = [
+        business["id"]
+        for business in engine.seed_bundle["businesses"]
+        if business["type"] in {"hotel", "hotel_bar"}
+    ]
+    assert hotel_ids
+
+    peaks_day_minus = [
+        max(scenario["days"]["-1"]["business_day_summary"][business_id]["active_visitors_series_15m"])
+        for business_id in hotel_ids
+    ]
+    peaks_match_day = [
+        max(scenario["days"]["0"]["business_day_summary"][business_id]["active_visitors_series_15m"])
+        for business_id in hotel_ids
+    ]
+    peaks_day_plus = [
+        max(scenario["days"]["1"]["business_day_summary"][business_id]["active_visitors_series_15m"])
+        for business_id in hotel_ids
+    ]
+
+    avg_minus = sum(peaks_day_minus) / len(peaks_day_minus)
+    avg_match = sum(peaks_match_day) / len(peaks_match_day)
+    avg_plus = sum(peaks_day_plus) / len(peaks_day_plus)
+
+    # Hotels should run hot before kickoff, hit the highest pressure on match day,
+    # then cool materially after departure waves begin.
+    assert avg_minus >= avg_match * 0.9
+    assert avg_match >= avg_minus
+    assert avg_plus <= avg_match * 0.85
+
+    airport_arrivals = scenario["days"]["1"]["zone_day_summary"]["airport_zone"]["arrivals_series_15m"]
+    local_peak_count = sum(
+        1
+        for index in range(1, len(airport_arrivals) - 1)
+        if airport_arrivals[index] >= airport_arrivals[index - 1]
+        and airport_arrivals[index] >= airport_arrivals[index + 1]
+        and airport_arrivals[index] > 2000
+    )
+    assert local_peak_count >= 3
+
+    flagship_hotel = max(
+        (
+            business
+            for business in engine.seed_bundle["businesses"]
+            if business["type"] in {"hotel", "hotel_bar"}
+        ),
+        key=lambda item: item["capacity_estimate"],
+    )["id"]
+    flagship_series = scenario["days"]["1"]["business_day_summary"][flagship_hotel]["active_visitors_series_15m"]
+    drops = [max(0, flagship_series[index - 1] - flagship_series[index]) for index in range(1, len(flagship_series))]
+    major_drop_threshold = max(40, round(engine._business_capacity_limit(flagship_hotel) / 15))
+    assert sum(1 for value in drops if value >= major_drop_threshold) >= 3

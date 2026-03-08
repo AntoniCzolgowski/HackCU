@@ -312,6 +312,8 @@ vi.mock("./lib/api", () => ({
       avg_opportunity_score: 72.5,
       volatility_index: 15.3,
       risk_exposure_pct: 20,
+      execution_pressure: 58.4,
+      stability_score: 71.2,
       recommended_focus_match_ids: ["dallas-netherlands-japan-2026-06-14"],
     },
     matches: [
@@ -327,9 +329,12 @@ vi.mock("./lib/api", () => ({
         peak_capacity_pct: 120,
         zone_share: 37,
         dominant_segment: "Japan",
+        execution_pressure: 58.4,
+        stability_score: 71.2,
         score_breakdown: { revenue_index: 1, demand_index: 1, risk_index: 0.538, capture_index: 0.37, confidence_index: 1 },
         opportunity_score: 72.5,
         recommendation_tag: "solid",
+        quick_recommendation: "Hold",
       },
     ],
   }),
@@ -353,6 +358,10 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "Select business" }));
     expect(await screen.findByText("Generate PDF report")).toBeInTheDocument();
     expect(screen.getByText("Active visitors over time")).toBeInTheDocument();
+    expect(await screen.findByText("Consulting Opportunity Board")).toBeInTheDocument();
+    expect(await screen.findByText("Revenue vs Risk Overlay")).toBeInTheDocument();
+    expect(screen.getByText("Exec Pressure")).toBeInTheDocument();
+    expect(screen.getByText("Capacity warning")).toBeInTheDocument();
   });
 
   it("can switch to the stadium drawer", async () => {
@@ -373,5 +382,25 @@ describe("App", () => {
 
     expect(await screen.findByText("Schedule preview mode. This city is in the schedule registry, but the live map pack is not generated yet.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Poland vs Tunisia" })).toBeInTheDocument();
+  });
+
+  it("exports business CSV data", async () => {
+    const user = userEvent.setup();
+    const createObjectUrlSpy = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:matchflow");
+    const revokeObjectUrlSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    render(<App />);
+    await screen.findByRole("heading", { name: "Netherlands vs Japan" });
+    await user.click(screen.getByRole("button", { name: "Select business" }));
+    await user.click(await screen.findByRole("button", { name: "Export CSV" }));
+
+    expect(createObjectUrlSpy).toHaveBeenCalled();
+    expect(clickSpy).toHaveBeenCalled();
+    expect(revokeObjectUrlSpy).toHaveBeenCalled();
+
+    createObjectUrlSpy.mockRestore();
+    revokeObjectUrlSpy.mockRestore();
+    clickSpy.mockRestore();
   });
 });

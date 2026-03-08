@@ -254,6 +254,36 @@
       "hours": "11:00-23:00",
       "source": "seeded_real",
       "signature_item": "craft-beer crowd capture"
+    },
+    {
+      "id": "biz_sf_fairmont",
+      "name": "Fairmont San Francisco",
+      "type": "hotel",
+      "zone_id": "downtown_zone",
+      "node_id": "downtown_dallas",
+      "lat": 37.7925,
+      "lng": -122.4108,
+      "rating": 4.5,
+      "price_level": 4,
+      "capacity_estimate": 980,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "premium pre-match city stays"
+    },
+    {
+      "id": "biz_sf_sfo_marriott",
+      "name": "SFO Gateway Marriott",
+      "type": "hotel",
+      "zone_id": "arlington_hotels_zone",
+      "node_id": "arlington_hotels",
+      "lat": 37.6212,
+      "lng": -122.3849,
+      "rating": 4.3,
+      "price_level": 3,
+      "capacity_estimate": 870,
+      "hours": "24/7",
+      "source": "seeded_real",
+      "signature_item": "arrival-night airport corridor demand"
     }
   ]
 }

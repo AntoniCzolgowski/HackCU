@@ -11,6 +11,7 @@ interface HeaderBarProps {
 
 export function HeaderBar({ match, timeLabel, scenarioId, onOpenProvenance, sourceAvailability }: HeaderBarProps) {
   const kickoffLabel = formatMatchDateTime(match.kickoff_local, { includeWeekday: true });
+  const llmReady = sourceAvailability.gemini ?? sourceAvailability.llm_recommendations ?? sourceAvailability.anthropic ?? false;
 
   return (
     <header className="topbar">
@@ -28,8 +29,8 @@ export function HeaderBar({ match, timeLabel, scenarioId, onOpenProvenance, sour
         <div className="badge-strip">
           <span className="status-badge">Scenario: {scenarioId}</span>
           <span className="status-badge">Live time: {timeLabel}</span>
-          <span className={`status-badge ${sourceAvailability.anthropic ? "live" : "seeded"}`}>
-            {sourceAvailability.anthropic ? "Anthropic Ready" : "Heuristic Insights"}
+          <span className={`status-badge ${llmReady ? "live" : "seeded"}`}>
+            {llmReady ? "Gemini Ready" : "Heuristic Insights"}
           </span>
           <span className={`status-badge ${sourceAvailability.google_places ? "live" : "seeded"}`}>
             {sourceAvailability.google_places ? "Places Ready" : "Seeded Ratings"}
