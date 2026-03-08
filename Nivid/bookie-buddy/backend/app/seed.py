@@ -9,7 +9,7 @@ from app.worker import run_poll_cycle
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Seed ValueBet IQ with bankroll and optional mock odds snapshots.")
+    parser = argparse.ArgumentParser(description="Seed Bookie Buddy with bankroll and optional mock odds snapshots.")
     parser.add_argument("--with-odds", action="store_true", help="Run one polling cycle to ingest odds and generate recs.")
     parser.add_argument("--deposit", type=float, default=None, help="Deposit amount if bankroll is empty.")
     args = parser.parse_args()

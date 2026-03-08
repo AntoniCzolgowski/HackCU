@@ -10,7 +10,7 @@ import streamlit as st
 
 from utils.api import get, post
 
-st.set_page_config(page_title="ValueBet IQ | World Cup Lab", page_icon="IQ", layout="wide")
+st.set_page_config(page_title="Bookie Buddy | World Cup Lab", page_icon="IQ", layout="wide")
 
 st.markdown(
     """
@@ -78,7 +78,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.title("ValueBet IQ: FIFA World Cup Edge Engine")
+st.title("Bookie Buddy: FIFA World Cup Edge Engine")
 st.caption("Decision-support only. SIM mode default. Uses odds, player/team context, weather, and current news signals.")
 
 with st.sidebar:

@@ -1,6 +1,6 @@
-# ValueBet IQ
+# Bookie Buddy
 
-ValueBet IQ is a production-style web app for FIFA World Cup betting decision support.
+Bookie Buddy is a production-style web app for FIFA World Cup betting decision support.
 
 It helps a user:
 1. Select a game.
@@ -33,7 +33,7 @@ It helps a user:
 ## Project Structure
 
 ```text
-valuebet-iq/
+bookie-buddy/
   backend/
     app/
       api/routes.py
@@ -141,7 +141,7 @@ pytest -q
 - `Implied Probability`: Market-estimated chance from odds. Formula: `1 / decimal_odds`.
 - `Overround`: Built-in bookmaker margin that pushes combined implied probabilities above 100%.
 - `Normalized Implied Probability`: Implied probabilities adjusted to remove overround.
-- `Model Probability`: ValueBet IQ probability estimate from odds, team strength, players, weather, and news.
+- `Model Probability`: Bookie Buddy probability estimate from odds, team strength, players, weather, and news.
 - `Edge`: Difference between model and market probability. Formula: `model_prob - implied_prob`.
 - `Expected Value (EV)`: Long-run value estimate. Formula: `model_prob * decimal_odds - 1`.
 - `TOP_PICK`: High-value recommendation that passes all risk checks.
