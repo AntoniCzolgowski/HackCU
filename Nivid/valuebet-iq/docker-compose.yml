@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-valuebet_iq}
+      POSTGRES_USER: ${POSTGRES_USER:-valuebet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-valuebet}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-valuebet} -d ${POSTGRES_DB:-valuebet_iq}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head &&
+             python -m app.seed --with-odds &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  worker:
+    build:
+      context: ./backend
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    command: ["python", "-m", "app.worker"]
+
+  dashboard:
+    build:
+      context: ./dashboard
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "8501:8501"
+
+volumes:
+  postgres_data:

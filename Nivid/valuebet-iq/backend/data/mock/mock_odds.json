@@ -1,0 +1,96 @@
+{
+  "start_time_utc": "2026-06-11T16:00:00Z",
+  "fixtures_per_group": 6,
+  "groups": {
+    "A": ["Mexico", "South Africa", "Korea Republic", "DEN/MKD/CZE/IRL"],
+    "B": ["Canada", "Qatar", "Switzerland", "ITA/NIR/WAL/BIH"],
+    "C": ["Brazil", "Morocco", "Haiti", "Scotland"],
+    "D": ["USA", "Paraguay", "Australia", "TUR/ROU/SVK/KOS"],
+    "E": ["Germany", "Curacao", "Cote d'Ivoire", "Ecuador"],
+    "F": ["Netherlands", "Japan", "Tunisia", "UKR/SWE/POL/ALB"],
+    "G": ["Belgium", "Egypt", "IR Iran", "New Zealand"],
+    "H": ["Spain", "Cabo Verde", "Saudi Arabia", "Uruguay"],
+    "I": ["BOL/SUR/IRQ", "France", "Senegal", "Norway"],
+    "J": ["Argentina", "Algeria", "Austria", "Jordan"],
+    "K": ["NCL/JAM/COD", "Portugal", "Uzbekistan", "Colombia"],
+    "L": ["England", "Croatia", "Ghana", "Panama"]
+  },
+  "venues": [
+    {"name": "Estadio Azteca", "city": "Mexico City", "country": "Mexico", "lat": 19.3029, "lon": -99.1505},
+    {"name": "MetLife Stadium", "city": "East Rutherford", "country": "USA", "lat": 40.8135, "lon": -74.0745},
+    {"name": "SoFi Stadium", "city": "Inglewood", "country": "USA", "lat": 33.9535, "lon": -118.3392},
+    {"name": "BMO Field", "city": "Toronto", "country": "Canada", "lat": 43.6331, "lon": -79.4186},
+    {"name": "Estadio BBVA", "city": "Monterrey", "country": "Mexico", "lat": 25.6694, "lon": -100.2446},
+    {"name": "AT&T Stadium", "city": "Arlington", "country": "USA", "lat": 32.7473, "lon": -97.0945}
+  ],
+  "team_profiles": {
+    "Mexico": {"attack": 1.52, "defense": 1.05, "strength": 0.64},
+    "South Africa": {"attack": 1.15, "defense": 1.28, "strength": 0.44},
+    "Korea Republic": {"attack": 1.36, "defense": 1.15, "strength": 0.56},
+    "Canada": {"attack": 1.32, "defense": 1.16, "strength": 0.55},
+    "Qatar": {"attack": 1.08, "defense": 1.34, "strength": 0.39},
+    "Switzerland": {"attack": 1.41, "defense": 1.05, "strength": 0.60},
+    "Brazil": {"attack": 1.88, "defense": 0.90, "strength": 0.82},
+    "Morocco": {"attack": 1.42, "defense": 1.02, "strength": 0.63},
+    "Haiti": {"attack": 1.05, "defense": 1.38, "strength": 0.35},
+    "Scotland": {"attack": 1.24, "defense": 1.18, "strength": 0.52},
+    "USA": {"attack": 1.49, "defense": 1.10, "strength": 0.60},
+    "Paraguay": {"attack": 1.18, "defense": 1.20, "strength": 0.48},
+    "Australia": {"attack": 1.26, "defense": 1.17, "strength": 0.50},
+    "Germany": {"attack": 1.74, "defense": 0.96, "strength": 0.75},
+    "Curacao": {"attack": 1.09, "defense": 1.31, "strength": 0.40},
+    "Cote d'Ivoire": {"attack": 1.35, "defense": 1.14, "strength": 0.55},
+    "Ecuador": {"attack": 1.30, "defense": 1.12, "strength": 0.54},
+    "Netherlands": {"attack": 1.68, "defense": 0.98, "strength": 0.72},
+    "Japan": {"attack": 1.46, "defense": 1.08, "strength": 0.60},
+    "Tunisia": {"attack": 1.10, "defense": 1.27, "strength": 0.42},
+    "Belgium": {"attack": 1.56, "defense": 1.07, "strength": 0.65},
+    "Egypt": {"attack": 1.25, "defense": 1.18, "strength": 0.50},
+    "IR Iran": {"attack": 1.22, "defense": 1.17, "strength": 0.49},
+    "New Zealand": {"attack": 1.05, "defense": 1.35, "strength": 0.36},
+    "Spain": {"attack": 1.82, "defense": 0.93, "strength": 0.79},
+    "Cabo Verde": {"attack": 1.12, "defense": 1.25, "strength": 0.44},
+    "Saudi Arabia": {"attack": 1.17, "defense": 1.22, "strength": 0.46},
+    "Uruguay": {"attack": 1.57, "defense": 1.04, "strength": 0.66},
+    "France": {"attack": 1.86, "defense": 0.92, "strength": 0.81},
+    "Senegal": {"attack": 1.42, "defense": 1.08, "strength": 0.59},
+    "Norway": {"attack": 1.48, "defense": 1.10, "strength": 0.58},
+    "Argentina": {"attack": 1.84, "defense": 0.91, "strength": 0.80},
+    "Algeria": {"attack": 1.31, "defense": 1.15, "strength": 0.53},
+    "Austria": {"attack": 1.33, "defense": 1.13, "strength": 0.55},
+    "Jordan": {"attack": 1.05, "defense": 1.33, "strength": 0.38},
+    "Portugal": {"attack": 1.76, "defense": 0.95, "strength": 0.76},
+    "Uzbekistan": {"attack": 1.17, "defense": 1.21, "strength": 0.47},
+    "Colombia": {"attack": 1.46, "defense": 1.08, "strength": 0.61},
+    "England": {"attack": 1.79, "defense": 0.94, "strength": 0.78},
+    "Croatia": {"attack": 1.45, "defense": 1.05, "strength": 0.62},
+    "Ghana": {"attack": 1.24, "defense": 1.16, "strength": 0.50},
+    "Panama": {"attack": 1.09, "defense": 1.28, "strength": 0.41}
+  },
+  "team_players": {
+    "France": [
+      {"name": "Kylian Mbappe", "impact": 0.90, "score_share": 0.29, "assist_share": 0.12},
+      {"name": "Antoine Griezmann", "impact": 0.74, "score_share": 0.15, "assist_share": 0.19}
+    ],
+    "Argentina": [
+      {"name": "Lautaro Martinez", "impact": 0.77, "score_share": 0.27, "assist_share": 0.06},
+      {"name": "Julian Alvarez", "impact": 0.73, "score_share": 0.21, "assist_share": 0.10}
+    ],
+    "Brazil": [
+      {"name": "Vinicius Junior", "impact": 0.82, "score_share": 0.25, "assist_share": 0.15},
+      {"name": "Rodrygo", "impact": 0.70, "score_share": 0.18, "assist_share": 0.11}
+    ],
+    "Spain": [
+      {"name": "Alvaro Morata", "impact": 0.75, "score_share": 0.24, "assist_share": 0.08},
+      {"name": "Lamine Yamal", "impact": 0.74, "score_share": 0.17, "assist_share": 0.18}
+    ],
+    "England": [
+      {"name": "Harry Kane", "impact": 0.84, "score_share": 0.30, "assist_share": 0.09},
+      {"name": "Bukayo Saka", "impact": 0.76, "score_share": 0.19, "assist_share": 0.16}
+    ],
+    "Portugal": [
+      {"name": "Cristiano Ronaldo", "impact": 0.79, "score_share": 0.28, "assist_share": 0.06},
+      {"name": "Bruno Fernandes", "impact": 0.74, "score_share": 0.14, "assist_share": 0.20}
+    ]
+  }
+}
