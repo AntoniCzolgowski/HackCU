@@ -23,10 +23,10 @@ def db_session() -> Session:
 
     event = Event(
         provider_event_id="test-event-1",
-        sport="basketball_nba",
-        league="NBA",
-        home_team="Team A",
-        away_team="Team B",
+        sport="soccer_fifa_world_cup",
+        league="FIFA World Cup 2026",
+        home_team="Mexico",
+        away_team="South Africa",
         start_time=datetime.now(timezone.utc),
         is_live=False,
         status="scheduled",
@@ -38,8 +38,8 @@ def db_session() -> Session:
     db.add(market)
     db.flush()
 
-    db.add(Outcome(market_id=market.id, name="Team A"))
-    db.add(Outcome(market_id=market.id, name="Team B"))
+    db.add(Outcome(market_id=market.id, name="Mexico"))
+    db.add(Outcome(market_id=market.id, name="South Africa"))
     db.commit()
 
     try:

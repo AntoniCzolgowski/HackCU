@@ -88,6 +88,8 @@ docker compose up --build
 - API docs: http://localhost:8000/docs
 - Metrics: http://localhost:8000/metrics
 
+Note: if you see a different dashboard at `localhost:8501`, another local Streamlit app is already using that port. Stop that process or remap the dashboard port in `docker-compose.yml`.
+
 ## API Highlights
 
 - `GET /api/events`
