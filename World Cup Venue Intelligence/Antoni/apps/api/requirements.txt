@@ -1,0 +1,7 @@
+fastapi==0.135.1
+httpx==0.28.1
+networkx==3.6.1
+pillow==11.3.0
+python-dotenv==1.2.2
+reportlab==4.4.4
+uvicorn==0.41.0

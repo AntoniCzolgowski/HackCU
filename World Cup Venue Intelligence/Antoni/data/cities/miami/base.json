@@ -1,0 +1,452 @@
+{
+  "city": {
+    "city_id": "miami",
+    "name": "Miami",
+    "venue_name": "Hard Rock Stadium",
+    "venue_capacity": 65000,
+    "country": "USA",
+    "timezone": "America/New_York",
+    "default_map_center": [
+      -80.241,
+      25.873
+    ],
+    "default_map_zoom": 9.8
+  },
+  "nodes": [
+    {
+      "id": "dfw_airport",
+      "label": "Miami International Airport",
+      "lat": 25.7959,
+      "lng": -80.287
+    },
+    {
+      "id": "grapevine_junction",
+      "label": "North Miami Gateway",
+      "lat": 25.938,
+      "lng": -80.248
+    },
+    {
+      "id": "las_colinas",
+      "label": "Doral Hotel District",
+      "lat": 25.8183,
+      "lng": -80.3374
+    },
+    {
+      "id": "irving_gateway",
+      "label": "Golden Glades Connector",
+      "lat": 25.9214,
+      "lng": -80.2147
+    },
+    {
+      "id": "design_district",
+      "label": "Miami Design District",
+      "lat": 25.8132,
+      "lng": -80.1939
+    },
+    {
+      "id": "downtown_dallas",
+      "label": "Downtown Miami",
+      "lat": 25.7743,
+      "lng": -80.1937
+    },
+    {
+      "id": "uptown",
+      "label": "Brickell",
+      "lat": 25.7618,
+      "lng": -80.1911
+    },
+    {
+      "id": "deep_ellum",
+      "label": "Wynwood",
+      "lat": 25.8005,
+      "lng": -80.1994
+    },
+    {
+      "id": "arlington_north",
+      "label": "Hard Rock North Gate",
+      "lat": 25.9691,
+      "lng": -80.2378
+    },
+    {
+      "id": "stadium",
+      "label": "Hard Rock Stadium",
+      "lat": 25.958,
+      "lng": -80.2389
+    },
+    {
+      "id": "texas_live",
+      "label": "Stadium Entertainment Strip",
+      "lat": 25.9628,
+      "lng": -80.2312
+    },
+    {
+      "id": "arlington_hotels",
+      "label": "Stadium Hotel Cluster",
+      "lat": 25.9509,
+      "lng": -80.2148
+    },
+    {
+      "id": "local_neighborhoods",
+      "label": "Miramar Neighborhoods",
+      "lat": 25.9786,
+      "lng": -80.343
+    },
+    {
+      "id": "fanzone",
+      "label": "Miami Fan Zone",
+      "lat": 25.9497,
+      "lng": -80.2281
+    }
+  ],
+  "edges": [
+    {
+      "id": "dfw_grapevine",
+      "source": "dfw_airport",
+      "target": "grapevine_junction",
+      "road_name": "Palmetto Expressway",
+      "capacity": 8200,
+      "base_travel_minutes": 29,
+      "distance_km": 27.3,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "grapevine_las_colinas",
+      "source": "grapevine_junction",
+      "target": "las_colinas",
+      "road_name": "Palmetto Expressway via Express Lanes",
+      "capacity": 7800,
+      "base_travel_minutes": 22,
+      "distance_km": 22.7,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_irving",
+      "source": "las_colinas",
+      "target": "irving_gateway",
+      "road_name": "Palmetto Expressway",
+      "capacity": 7600,
+      "base_travel_minutes": 26,
+      "distance_km": 26.4,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_design",
+      "source": "irving_gateway",
+      "target": "design_district",
+      "road_name": "Northwest 7th Avenue",
+      "capacity": 8900,
+      "base_travel_minutes": 14,
+      "distance_km": 14.0,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_downtown",
+      "source": "design_district",
+      "target": "downtown_dallas",
+      "road_name": "North Miami Avenue",
+      "capacity": 5400,
+      "base_travel_minutes": 7,
+      "distance_km": 4.5,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_uptown",
+      "source": "downtown_dallas",
+      "target": "uptown",
+      "road_name": "Southwest 1st Avenue via North Miami Avenue",
+      "capacity": 3200,
+      "base_travel_minutes": 3,
+      "distance_km": 1.9,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_deep_ellum",
+      "source": "downtown_dallas",
+      "target": "deep_ellum",
+      "road_name": "Northwest 3rd Avenue",
+      "capacity": 2800,
+      "base_travel_minutes": 6,
+      "distance_km": 3.7,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_stadium",
+      "source": "downtown_dallas",
+      "target": "stadium",
+      "road_name": "Florida's Turnpike via Northwest 199th Street",
+      "capacity": 9600,
+      "base_travel_minutes": 24,
+      "distance_km": 24.7,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_stadium",
+      "source": "irving_gateway",
+      "target": "stadium",
+      "road_name": "Florida's Turnpike via Northwest 199th Street",
+      "capacity": 9300,
+      "base_travel_minutes": 12,
+      "distance_km": 8.2,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_north_stadium",
+      "source": "arlington_north",
+      "target": "stadium",
+      "road_name": "Northwest 27th Avenue via Northwest 203rd Street",
+      "capacity": 3400,
+      "base_travel_minutes": 9,
+      "distance_km": 3.0,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_stadium",
+      "source": "texas_live",
+      "target": "stadium",
+      "road_name": "Northwest 207th Street via Northwest 27th Avenue",
+      "capacity": 1900,
+      "base_travel_minutes": 7,
+      "distance_km": 3.2,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_hotels_stadium",
+      "source": "arlington_hotels",
+      "target": "stadium",
+      "road_name": "Northwest 199th Street",
+      "capacity": 2200,
+      "base_travel_minutes": 7,
+      "distance_km": 4.4,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_stadium",
+      "source": "local_neighborhoods",
+      "target": "stadium",
+      "road_name": "Miramar Parkway via Homestead Extension of Florida's Turnpike",
+      "capacity": 3100,
+      "base_travel_minutes": 15,
+      "distance_km": 13.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_fanzone",
+      "source": "texas_live",
+      "target": "fanzone",
+      "road_name": "Northwest 199th Street via Northwest 207th Street",
+      "capacity": 1600,
+      "base_travel_minutes": 7,
+      "distance_km": 5.2,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_hotels",
+      "source": "local_neighborhoods",
+      "target": "arlington_hotels",
+      "road_name": "Northwest 199th Street via Miramar Parkway",
+      "capacity": 2600,
+      "base_travel_minutes": 17,
+      "distance_km": 16.2,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_arlington_north",
+      "source": "texas_live",
+      "target": "arlington_north",
+      "road_name": "Northwest 207th Street via Northwest 215th Street",
+      "capacity": 2400,
+      "base_travel_minutes": 8,
+      "distance_km": 4.6,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "fanzone_arlington_hotels",
+      "source": "fanzone",
+      "target": "arlington_hotels",
+      "road_name": "Florida's Turnpike",
+      "capacity": 2100,
+      "base_travel_minutes": 9,
+      "distance_km": 7.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_downtown",
+      "source": "las_colinas",
+      "target": "downtown_dallas",
+      "road_name": "Dolphin Expressway",
+      "capacity": 7000,
+      "base_travel_minutes": 22,
+      "distance_km": 21.2,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_uptown",
+      "source": "design_district",
+      "target": "uptown",
+      "road_name": "Brickell Avenue Bridge",
+      "capacity": 2500,
+      "base_travel_minutes": 10,
+      "distance_km": 7.9,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "design_stadium",
+      "source": "design_district",
+      "target": "stadium",
+      "road_name": "Florida's Turnpike via Northwest 199th Street",
+      "capacity": 6100,
+      "base_travel_minutes": 22,
+      "distance_km": 20.8,
+      "kind": "highway",
+      "bidirectional": true
+    }
+  ],
+  "zones": [
+    {
+      "id": "stadium_zone",
+      "name": "Hard Rock Stadium Bowl",
+      "kind": "stadium",
+      "node_id": "stadium",
+      "center": [
+        -80.2389,
+        25.958
+      ],
+      "radius_m": 350,
+      "focus_color": "#F97316"
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Miami Fan Zone",
+      "kind": "fanzone",
+      "node_id": "fanzone",
+      "center": [
+        -80.2281,
+        25.9497
+      ],
+      "radius_m": 450,
+      "focus_color": "#F4B942"
+    },
+    {
+      "id": "texas_live_zone",
+      "name": "Stadium Entertainment Strip",
+      "kind": "bar_cluster",
+      "node_id": "texas_live",
+      "center": [
+        -80.2312,
+        25.9628
+      ],
+      "radius_m": 600,
+      "focus_color": "#F43F5E"
+    },
+    {
+      "id": "arlington_hotels_zone",
+      "name": "Stadium Hotel Cluster",
+      "kind": "hotel_cluster",
+      "node_id": "arlington_hotels",
+      "center": [
+        -80.2148,
+        25.9509
+      ],
+      "radius_m": 700,
+      "focus_color": "#22C55E"
+    },
+    {
+      "id": "local_zone",
+      "name": "Miramar Neighborhoods",
+      "kind": "residential",
+      "node_id": "local_neighborhoods",
+      "center": [
+        -80.343,
+        25.9786
+      ],
+      "radius_m": 850,
+      "focus_color": "#64748B"
+    },
+    {
+      "id": "las_colinas_zone",
+      "name": "Doral Hotel District",
+      "kind": "hotel_cluster",
+      "node_id": "las_colinas",
+      "center": [
+        -80.3374,
+        25.8183
+      ],
+      "radius_m": 780,
+      "focus_color": "#0EA5E9"
+    },
+    {
+      "id": "downtown_zone",
+      "name": "Downtown Miami",
+      "kind": "hotel_cluster",
+      "node_id": "downtown_dallas",
+      "center": [
+        -80.1937,
+        25.7743
+      ],
+      "radius_m": 950,
+      "focus_color": "#14B8A6"
+    },
+    {
+      "id": "uptown_zone",
+      "name": "Brickell",
+      "kind": "bar_cluster",
+      "node_id": "uptown",
+      "center": [
+        -80.1911,
+        25.7618
+      ],
+      "radius_m": 700,
+      "focus_color": "#8B5CF6"
+    },
+    {
+      "id": "deep_ellum_zone",
+      "name": "Wynwood",
+      "kind": "bar_cluster",
+      "node_id": "deep_ellum",
+      "center": [
+        -80.1994,
+        25.8005
+      ],
+      "radius_m": 650,
+      "focus_color": "#EF4444"
+    },
+    {
+      "id": "airport_zone",
+      "name": "Miami International Airport",
+      "kind": "transport",
+      "node_id": "dfw_airport",
+      "center": [
+        -80.287,
+        25.7959
+      ],
+      "radius_m": 1100,
+      "focus_color": "#3B82F6"
+    }
+  ],
+  "provenance": {
+    "seed_graph": "reduced host-city road simulation graph with city-specific corridor geometry",
+    "businesses": "seeded host-city venues curated for business-intelligence demos",
+    "weather": "baseline match weather profile with city-local kickoff timing",
+    "places_enrichment": "optional live Google Places overlay",
+    "llm_recommendations": "heuristic by default, optionally upgraded through Anthropic"
+  }
+}

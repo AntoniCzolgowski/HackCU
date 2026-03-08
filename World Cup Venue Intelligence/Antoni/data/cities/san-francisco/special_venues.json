@@ -1,0 +1,22 @@
+{
+  "special_venues": [
+    {
+      "id": "stadium_zone",
+      "name": "Levi's Stadium",
+      "entity_type": "stadium",
+      "zone_id": "stadium_zone",
+      "lat": 37.4031,
+      "lng": -121.9696,
+      "comfort_capacity": 68000
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Bay Area Fan Zone",
+      "entity_type": "fanzone",
+      "zone_id": "fanzone_zone",
+      "lat": 37.4081,
+      "lng": -121.9607,
+      "comfort_capacity": 19000
+    }
+  ]
+}

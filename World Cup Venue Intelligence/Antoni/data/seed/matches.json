@@ -1,0 +1,150 @@
+{
+  "default_match_id": "pol-mex-semi",
+  "matches": [
+    {
+      "match_id": "mex-ecu-group",
+      "title": "Mexico vs Ecuador",
+      "stage": "Group C - Matchday 1",
+      "city": "Dallas-Arlington",
+      "venue": "AT&T Stadium",
+      "venue_capacity": 80000,
+      "kickoff_local": "2026-06-14T18:00:00-05:00",
+      "home_team": { "id": "team_a", "name": "Mexico", "color": "#1B6B3A" },
+      "away_team": { "id": "team_b", "name": "Ecuador", "color": "#FFD100" },
+      "day_offsets": [-1, 0, 1],
+      "step_minutes": 15,
+      "timeline": { "start_hour": 6, "end_hour": 26, "steps": 80 },
+      "crowd_profile": {
+        "nationality_weights": { "team_a": 0.42, "team_b": 0.15, "neutral": 0.14, "locals": 0.29 },
+        "ticket_rates": { "team_a": 0.86, "team_b": 0.70, "neutral": 0.56, "locals": 0.44 },
+        "avg_spend_per_visitor": { "team_a": 42, "team_b": 35, "neutral": 48, "locals": 28 }
+      },
+      "cultural_notes": {
+        "team_a": "Mexican fans are famously passionate and social — expect large groups, early arrivals, and strong demand for beer buckets and street-food style items. Modelo and Corona are top sellers.",
+        "team_b": "Ecuadorian fans travel in tight-knit groups and gravitate toward lively atmospheres. Pilsener beer and ceviche-style snacks resonate well."
+      },
+      "rng_seed": 20260614,
+      "weather": {
+        "-1": { "temp_c": 34, "condition": "Hot and sunny", "walking_modifier": 0.88 },
+        "0": { "temp_c": 36, "condition": "Scorching afternoon", "walking_modifier": 0.78 },
+        "1": { "temp_c": 33, "condition": "Warm and clear", "walking_modifier": 0.90 }
+      }
+    },
+    {
+      "match_id": "ecu-ven-group",
+      "title": "Ecuador vs Venezuela",
+      "stage": "Group C - Matchday 2",
+      "city": "Dallas-Arlington",
+      "venue": "AT&T Stadium",
+      "venue_capacity": 80000,
+      "kickoff_local": "2026-06-18T15:00:00-05:00",
+      "home_team": { "id": "team_a", "name": "Ecuador", "color": "#FFD100" },
+      "away_team": { "id": "team_b", "name": "Venezuela", "color": "#CF142B" },
+      "day_offsets": [-1, 0, 1],
+      "step_minutes": 15,
+      "timeline": { "start_hour": 6, "end_hour": 26, "steps": 80 },
+      "crowd_profile": {
+        "nationality_weights": { "team_a": 0.22, "team_b": 0.18, "neutral": 0.20, "locals": 0.40 },
+        "ticket_rates": { "team_a": 0.68, "team_b": 0.62, "neutral": 0.50, "locals": 0.42 },
+        "avg_spend_per_visitor": { "team_a": 34, "team_b": 32, "neutral": 44, "locals": 28 }
+      },
+      "cultural_notes": {
+        "team_a": "Ecuadorian fans are energetic and travel in groups. They favor lively sports bars and appreciate Latin American food and Pilsener-style beer.",
+        "team_b": "Venezuelan fans are sociable and often mix with neutral crowds. Polar beer and arepas are cultural touchstones."
+      },
+      "rng_seed": 20260618,
+      "weather": {
+        "-1": { "temp_c": 35, "condition": "Dry heat", "walking_modifier": 0.85 },
+        "0": { "temp_c": 37, "condition": "Extreme heat advisory", "walking_modifier": 0.72 },
+        "1": { "temp_c": 34, "condition": "Hot and humid", "walking_modifier": 0.86 }
+      }
+    },
+    {
+      "match_id": "usa-jpn-group",
+      "title": "USA vs Japan",
+      "stage": "Group F - Matchday 3",
+      "city": "Dallas-Arlington",
+      "venue": "AT&T Stadium",
+      "venue_capacity": 80000,
+      "kickoff_local": "2026-06-22T20:00:00-05:00",
+      "home_team": { "id": "team_a", "name": "USA", "color": "#002868" },
+      "away_team": { "id": "team_b", "name": "Japan", "color": "#BC002D" },
+      "day_offsets": [-1, 0, 1],
+      "step_minutes": 15,
+      "timeline": { "start_hour": 6, "end_hour": 26, "steps": 80 },
+      "crowd_profile": {
+        "nationality_weights": { "team_a": 0.35, "team_b": 0.12, "neutral": 0.08, "locals": 0.45 },
+        "ticket_rates": { "team_a": 0.90, "team_b": 0.82, "neutral": 0.60, "locals": 0.55 },
+        "avg_spend_per_visitor": { "team_a": 50, "team_b": 40, "neutral": 52, "locals": 35 }
+      },
+      "cultural_notes": {
+        "team_a": "Home-nation crowd with strong local turnout. Expect classic American sports-bar culture — wings, burgers, domestic beers. Patriotic merchandise sells well. Very high energy.",
+        "team_b": "Japanese fans are famously respectful and organized. Sake and Japanese beer (Asahi, Sapporo) will be sought after. They tend to arrive early and stay late."
+      },
+      "rng_seed": 20260622,
+      "weather": {
+        "-1": { "temp_c": 33, "condition": "Partly cloudy", "walking_modifier": 0.92 },
+        "0": { "temp_c": 30, "condition": "Pleasant evening kickoff", "walking_modifier": 0.95 },
+        "1": { "temp_c": 31, "condition": "Clear skies", "walking_modifier": 0.93 }
+      }
+    },
+    {
+      "match_id": "bra-col-r32",
+      "title": "Brazil vs Colombia",
+      "stage": "Round of 32",
+      "city": "Dallas-Arlington",
+      "venue": "AT&T Stadium",
+      "venue_capacity": 80000,
+      "kickoff_local": "2026-07-02T18:00:00-05:00",
+      "home_team": { "id": "team_a", "name": "Brazil", "color": "#009739" },
+      "away_team": { "id": "team_b", "name": "Colombia", "color": "#FCD116" },
+      "day_offsets": [-1, 0, 1],
+      "step_minutes": 15,
+      "timeline": { "start_hour": 6, "end_hour": 26, "steps": 80 },
+      "crowd_profile": {
+        "nationality_weights": { "team_a": 0.34, "team_b": 0.26, "neutral": 0.22, "locals": 0.18 },
+        "ticket_rates": { "team_a": 0.88, "team_b": 0.84, "neutral": 0.62, "locals": 0.46 },
+        "avg_spend_per_visitor": { "team_a": 48, "team_b": 44, "neutral": 55, "locals": 30 }
+      },
+      "cultural_notes": {
+        "team_a": "Brazilian fans create carnival atmospheres — expect samba, drums, and high-energy gatherings well before kickoff. Caipirinha ingredients and Brahma/Skol beer sell fast. They stay late celebrating.",
+        "team_b": "Colombian fans are loud, festive, and arrive in yellow waves. Aguardiente and Aguila beer are cultural staples. Expect dance and cumbia music outside venues."
+      },
+      "rng_seed": 20260702,
+      "weather": {
+        "-1": { "temp_c": 36, "condition": "Hot and dry", "walking_modifier": 0.80 },
+        "0": { "temp_c": 35, "condition": "Hot afternoon", "walking_modifier": 0.82 },
+        "1": { "temp_c": 34, "condition": "Warm with thunderstorm risk", "walking_modifier": 0.85 }
+      }
+    },
+    {
+      "match_id": "pol-mex-semi",
+      "title": "Poland vs Mexico",
+      "stage": "Semifinal",
+      "city": "Dallas-Arlington",
+      "venue": "AT&T Stadium",
+      "venue_capacity": 80000,
+      "kickoff_local": "2026-07-14T18:00:00-05:00",
+      "home_team": { "id": "team_a", "name": "Poland", "color": "#DC143C" },
+      "away_team": { "id": "team_b", "name": "Mexico", "color": "#1B6B3A" },
+      "day_offsets": [-1, 0, 1],
+      "step_minutes": 15,
+      "timeline": { "start_hour": 6, "end_hour": 26, "steps": 80 },
+      "crowd_profile": {
+        "nationality_weights": { "team_a": 0.24, "team_b": 0.38, "neutral": 0.20, "locals": 0.18 },
+        "ticket_rates": { "team_a": 0.82, "team_b": 0.86, "neutral": 0.64, "locals": 0.48 },
+        "avg_spend_per_visitor": { "team_a": 46, "team_b": 42, "neutral": 58, "locals": 32 }
+      },
+      "cultural_notes": {
+        "team_a": "Polish fans are passionate beer drinkers who favor traditional lagers (Tyskie, Zywiec). Expect hearty appetites — kielbasa and pierogi-style items resonate. They tend to gather in large groups at beer halls and sports bars, arriving 2-3 hours before kickoff.",
+        "team_b": "Mexican fans dominate the DFW diaspora — expect the largest away support of any match. Modelo, Corona, and Dos Equis are must-stocks. Mariachi and fan chanting create electric pre-match atmospheres. Plan for very high post-match celebration dwell time."
+      },
+      "rng_seed": 20260714,
+      "weather": {
+        "-1": { "temp_c": 32, "condition": "Dry heat", "walking_modifier": 0.95 },
+        "0": { "temp_c": 35, "condition": "Hot afternoon", "walking_modifier": 0.82 },
+        "1": { "temp_c": 31, "condition": "Storm chance late", "walking_modifier": 0.91 }
+      }
+    }
+  ]
+}

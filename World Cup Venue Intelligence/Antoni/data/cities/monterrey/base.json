@@ -1,0 +1,452 @@
+{
+  "city": {
+    "city_id": "monterrey",
+    "name": "Monterrey",
+    "venue_name": "Estadio BBVA",
+    "venue_capacity": 53000,
+    "country": "Mexico",
+    "timezone": "America/Monterrey",
+    "default_map_center": [
+      -100.272,
+      25.689
+    ],
+    "default_map_zoom": 10.1
+  },
+  "nodes": [
+    {
+      "id": "dfw_airport",
+      "label": "Aeropuerto Internacional de Monterrey",
+      "lat": 25.7785,
+      "lng": -100.1069
+    },
+    {
+      "id": "grapevine_junction",
+      "label": "Apodaca Gateway",
+      "lat": 25.7523,
+      "lng": -100.1732
+    },
+    {
+      "id": "las_colinas",
+      "label": "San Pedro Hotel District",
+      "lat": 25.6588,
+      "lng": -100.3485
+    },
+    {
+      "id": "irving_gateway",
+      "label": "Fundidora Connector",
+      "lat": 25.6809,
+      "lng": -100.2754
+    },
+    {
+      "id": "design_district",
+      "label": "Parque Fundidora",
+      "lat": 25.6802,
+      "lng": -100.2866
+    },
+    {
+      "id": "downtown_dallas",
+      "label": "Centro Monterrey",
+      "lat": 25.6714,
+      "lng": -100.309
+    },
+    {
+      "id": "uptown",
+      "label": "San Pedro Nightlife",
+      "lat": 25.6519,
+      "lng": -100.3595
+    },
+    {
+      "id": "deep_ellum",
+      "label": "Barrio Antiguo",
+      "lat": 25.6662,
+      "lng": -100.3041
+    },
+    {
+      "id": "arlington_north",
+      "label": "Estadio BBVA North",
+      "lat": 25.6846,
+      "lng": -100.2428
+    },
+    {
+      "id": "stadium",
+      "label": "Estadio BBVA",
+      "lat": 25.6693,
+      "lng": -100.2441
+    },
+    {
+      "id": "texas_live",
+      "label": "Guadalupe Match District",
+      "lat": 25.6721,
+      "lng": -100.2392
+    },
+    {
+      "id": "arlington_hotels",
+      "label": "Guadalupe Hotel Cluster",
+      "lat": 25.6774,
+      "lng": -100.2358
+    },
+    {
+      "id": "local_neighborhoods",
+      "label": "Monterrey East Neighborhoods",
+      "lat": 25.7062,
+      "lng": -100.2111
+    },
+    {
+      "id": "fanzone",
+      "label": "Monterrey Fan Zone",
+      "lat": 25.6748,
+      "lng": -100.2543
+    }
+  ],
+  "edges": [
+    {
+      "id": "dfw_grapevine",
+      "source": "dfw_airport",
+      "target": "grapevine_junction",
+      "road_name": "Via Rapida a Monterrey via Camino A Pesquer\u00eda",
+      "capacity": 8200,
+      "base_travel_minutes": 11,
+      "distance_km": 10.1,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "grapevine_las_colinas",
+      "source": "grapevine_junction",
+      "target": "las_colinas",
+      "road_name": "Avenida Miguel Alem\u00e1n via West Fwy (Express)",
+      "capacity": 7800,
+      "base_travel_minutes": 26,
+      "distance_km": 24.4,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_irving",
+      "source": "las_colinas",
+      "target": "irving_gateway",
+      "road_name": "Avenida Doctor Ignacio Morones Prieto",
+      "capacity": 7600,
+      "base_travel_minutes": 13,
+      "distance_km": 11.8,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_design",
+      "source": "irving_gateway",
+      "target": "design_district",
+      "road_name": "Avenida Constituci\u00f3n via Avenida Fundidora",
+      "capacity": 8900,
+      "base_travel_minutes": 5,
+      "distance_km": 3.0,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_downtown",
+      "source": "design_district",
+      "target": "downtown_dallas",
+      "road_name": "Avenida Constituci\u00f3n via Calle Francisco M\u00e1rquez",
+      "capacity": 5400,
+      "base_travel_minutes": 7,
+      "distance_km": 4.2,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_uptown",
+      "source": "downtown_dallas",
+      "target": "uptown",
+      "road_name": "Avenida Venustiano Carranza via Calle Washington",
+      "capacity": 3200,
+      "base_travel_minutes": 10,
+      "distance_km": 8.6,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_deep_ellum",
+      "source": "downtown_dallas",
+      "target": "deep_ellum",
+      "road_name": "Calle Profesor Jos\u00e9 Silvestre Aramberri via Avenida Constituci\u00f3n",
+      "capacity": 2800,
+      "base_travel_minutes": 4,
+      "distance_km": 2.6,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_stadium",
+      "source": "downtown_dallas",
+      "target": "stadium",
+      "road_name": "Calle Guadalupe via Calle Profesor Jos\u00e9 Silvestre Aramberri",
+      "capacity": 9600,
+      "base_travel_minutes": 14,
+      "distance_km": 8.7,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_stadium",
+      "source": "irving_gateway",
+      "target": "stadium",
+      "road_name": "Avenida Chapultepec via Avenida Constituci\u00f3n",
+      "capacity": 9300,
+      "base_travel_minutes": 12,
+      "distance_km": 8.4,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_north_stadium",
+      "source": "arlington_north",
+      "target": "stadium",
+      "road_name": "Avenida Tolteca via Avenida Benito Ju\u00e1rez",
+      "capacity": 3400,
+      "base_travel_minutes": 6,
+      "distance_km": 3.0,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_stadium",
+      "source": "texas_live",
+      "target": "stadium",
+      "road_name": "Avenida Las Torres",
+      "capacity": 1900,
+      "base_travel_minutes": 3,
+      "distance_km": 1.0,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_hotels_stadium",
+      "source": "arlington_hotels",
+      "target": "stadium",
+      "road_name": "Avenida Tolteca via Avenida Las Torres",
+      "capacity": 2200,
+      "base_travel_minutes": 4,
+      "distance_km": 1.7,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_stadium",
+      "source": "local_neighborhoods",
+      "target": "stadium",
+      "road_name": "Avenida Adolfo L\u00f3pez Mateos via Avenida Benito Ju\u00e1rez",
+      "capacity": 3100,
+      "base_travel_minutes": 11,
+      "distance_km": 7.8,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_fanzone",
+      "source": "texas_live",
+      "target": "fanzone",
+      "road_name": "Avenida Las Torres",
+      "capacity": 1600,
+      "base_travel_minutes": 4,
+      "distance_km": 1.9,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_hotels",
+      "source": "local_neighborhoods",
+      "target": "arlington_hotels",
+      "road_name": "Avenida Adolfo L\u00f3pez Mateos via Avenida Benito Ju\u00e1rez",
+      "capacity": 2600,
+      "base_travel_minutes": 8,
+      "distance_km": 6.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_arlington_north",
+      "source": "texas_live",
+      "target": "arlington_north",
+      "road_name": "Avenida Exposici\u00f3n via Avenida Las Torres",
+      "capacity": 2400,
+      "base_travel_minutes": 4,
+      "distance_km": 2.1,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "fanzone_arlington_hotels",
+      "source": "fanzone",
+      "target": "arlington_hotels",
+      "road_name": "Avenida Benito Ju\u00e1rez via Calle Guadalupe",
+      "capacity": 2100,
+      "base_travel_minutes": 4,
+      "distance_km": 2.5,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_downtown",
+      "source": "las_colinas",
+      "target": "downtown_dallas",
+      "road_name": "Avenida Doctor Ignacio Morones Prieto via Avenida L\u00e1zaro C\u00e1rdenas",
+      "capacity": 7000,
+      "base_travel_minutes": 9,
+      "distance_km": 6.9,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_uptown",
+      "source": "design_district",
+      "target": "uptown",
+      "road_name": "Avenida Constituci\u00f3n",
+      "capacity": 2500,
+      "base_travel_minutes": 13,
+      "distance_km": 11.2,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "design_stadium",
+      "source": "design_district",
+      "target": "stadium",
+      "road_name": "Calle Guadalupe via Calzada Francisco I. Madero",
+      "capacity": 6100,
+      "base_travel_minutes": 12,
+      "distance_km": 6.3,
+      "kind": "highway",
+      "bidirectional": true
+    }
+  ],
+  "zones": [
+    {
+      "id": "stadium_zone",
+      "name": "Estadio BBVA Bowl",
+      "kind": "stadium",
+      "node_id": "stadium",
+      "center": [
+        -100.2441,
+        25.6693
+      ],
+      "radius_m": 350,
+      "focus_color": "#F97316"
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Monterrey Fan Zone",
+      "kind": "fanzone",
+      "node_id": "fanzone",
+      "center": [
+        -100.2543,
+        25.6748
+      ],
+      "radius_m": 450,
+      "focus_color": "#F4B942"
+    },
+    {
+      "id": "texas_live_zone",
+      "name": "Guadalupe Match District",
+      "kind": "bar_cluster",
+      "node_id": "texas_live",
+      "center": [
+        -100.2392,
+        25.6721
+      ],
+      "radius_m": 600,
+      "focus_color": "#F43F5E"
+    },
+    {
+      "id": "arlington_hotels_zone",
+      "name": "Guadalupe Hotel Cluster",
+      "kind": "hotel_cluster",
+      "node_id": "arlington_hotels",
+      "center": [
+        -100.2358,
+        25.6774
+      ],
+      "radius_m": 700,
+      "focus_color": "#22C55E"
+    },
+    {
+      "id": "local_zone",
+      "name": "Monterrey East Neighborhoods",
+      "kind": "residential",
+      "node_id": "local_neighborhoods",
+      "center": [
+        -100.2111,
+        25.7062
+      ],
+      "radius_m": 850,
+      "focus_color": "#64748B"
+    },
+    {
+      "id": "las_colinas_zone",
+      "name": "San Pedro Hotel District",
+      "kind": "hotel_cluster",
+      "node_id": "las_colinas",
+      "center": [
+        -100.3485,
+        25.6588
+      ],
+      "radius_m": 780,
+      "focus_color": "#0EA5E9"
+    },
+    {
+      "id": "downtown_zone",
+      "name": "Centro Monterrey",
+      "kind": "hotel_cluster",
+      "node_id": "downtown_dallas",
+      "center": [
+        -100.309,
+        25.6714
+      ],
+      "radius_m": 950,
+      "focus_color": "#14B8A6"
+    },
+    {
+      "id": "uptown_zone",
+      "name": "San Pedro Nightlife",
+      "kind": "bar_cluster",
+      "node_id": "uptown",
+      "center": [
+        -100.3595,
+        25.6519
+      ],
+      "radius_m": 700,
+      "focus_color": "#8B5CF6"
+    },
+    {
+      "id": "deep_ellum_zone",
+      "name": "Barrio Antiguo",
+      "kind": "bar_cluster",
+      "node_id": "deep_ellum",
+      "center": [
+        -100.3041,
+        25.6662
+      ],
+      "radius_m": 650,
+      "focus_color": "#EF4444"
+    },
+    {
+      "id": "airport_zone",
+      "name": "Aeropuerto Internacional de Monterrey",
+      "kind": "transport",
+      "node_id": "dfw_airport",
+      "center": [
+        -100.1069,
+        25.7785
+      ],
+      "radius_m": 1100,
+      "focus_color": "#3B82F6"
+    }
+  ],
+  "provenance": {
+    "seed_graph": "reduced host-city road simulation graph with city-specific corridor geometry",
+    "businesses": "seeded host-city venues curated for business-intelligence demos",
+    "weather": "baseline match weather profile with city-local kickoff timing",
+    "places_enrichment": "optional live Google Places overlay",
+    "llm_recommendations": "heuristic by default, optionally upgraded through Anthropic"
+  }
+}

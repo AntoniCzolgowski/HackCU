@@ -1,0 +1,452 @@
+{
+  "city": {
+    "city_id": "houston",
+    "name": "Houston",
+    "venue_name": "NRG Stadium",
+    "venue_capacity": 72000,
+    "country": "USA",
+    "timezone": "America/Chicago",
+    "default_map_center": [
+      -95.394,
+      29.748
+    ],
+    "default_map_zoom": 10.2
+  },
+  "nodes": [
+    {
+      "id": "dfw_airport",
+      "label": "George Bush Intercontinental Airport",
+      "lat": 29.9902,
+      "lng": -95.3368
+    },
+    {
+      "id": "grapevine_junction",
+      "label": "North Loop Gateway",
+      "lat": 29.925,
+      "lng": -95.357
+    },
+    {
+      "id": "las_colinas",
+      "label": "Galleria Hotel District",
+      "lat": 29.748,
+      "lng": -95.461
+    },
+    {
+      "id": "irving_gateway",
+      "label": "Midtown Connector",
+      "lat": 29.733,
+      "lng": -95.383
+    },
+    {
+      "id": "design_district",
+      "label": "Museum District",
+      "lat": 29.725,
+      "lng": -95.39
+    },
+    {
+      "id": "downtown_dallas",
+      "label": "Downtown Houston",
+      "lat": 29.7604,
+      "lng": -95.3698
+    },
+    {
+      "id": "uptown",
+      "label": "Midtown Houston",
+      "lat": 29.7385,
+      "lng": -95.3748
+    },
+    {
+      "id": "deep_ellum",
+      "label": "EaDo",
+      "lat": 29.7524,
+      "lng": -95.3536
+    },
+    {
+      "id": "arlington_north",
+      "label": "NRG North Gate",
+      "lat": 29.6929,
+      "lng": -95.4095
+    },
+    {
+      "id": "stadium",
+      "label": "NRG Stadium",
+      "lat": 29.6847,
+      "lng": -95.4107
+    },
+    {
+      "id": "texas_live",
+      "label": "Stadium Entertainment District",
+      "lat": 29.6897,
+      "lng": -95.4016
+    },
+    {
+      "id": "arlington_hotels",
+      "label": "Stadium Hotel Cluster",
+      "lat": 29.6937,
+      "lng": -95.4172
+    },
+    {
+      "id": "local_neighborhoods",
+      "label": "Bellaire Neighborhoods",
+      "lat": 29.7041,
+      "lng": -95.4489
+    },
+    {
+      "id": "fanzone",
+      "label": "Houston Fan Zone",
+      "lat": 29.6915,
+      "lng": -95.3942
+    }
+  ],
+  "edges": [
+    {
+      "id": "dfw_grapevine",
+      "source": "dfw_airport",
+      "target": "grapevine_junction",
+      "road_name": "John F. Kennedy Boulevard via Aldine Bender Road",
+      "capacity": 8200,
+      "base_travel_minutes": 17,
+      "distance_km": 13.1,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "grapevine_las_colinas",
+      "source": "grapevine_junction",
+      "target": "las_colinas",
+      "road_name": "North Loop East via Hardy Toll Road",
+      "capacity": 7800,
+      "base_travel_minutes": 28,
+      "distance_km": 30.9,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_irving",
+      "source": "las_colinas",
+      "target": "irving_gateway",
+      "road_name": "Southwest Freeway",
+      "capacity": 7600,
+      "base_travel_minutes": 10,
+      "distance_km": 10.6,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_design",
+      "source": "irving_gateway",
+      "target": "design_district",
+      "road_name": "Fannin Street",
+      "capacity": 8900,
+      "base_travel_minutes": 2,
+      "distance_km": 1.2,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_downtown",
+      "source": "design_district",
+      "target": "downtown_dallas",
+      "road_name": "Louisiana Street via Main Street",
+      "capacity": 5400,
+      "base_travel_minutes": 7,
+      "distance_km": 5.1,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_uptown",
+      "source": "downtown_dallas",
+      "target": "uptown",
+      "road_name": "Fannin Street via McKinney Street",
+      "capacity": 3200,
+      "base_travel_minutes": 5,
+      "distance_km": 3.3,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_deep_ellum",
+      "source": "downtown_dallas",
+      "target": "deep_ellum",
+      "road_name": "Rusk Street",
+      "capacity": 2800,
+      "base_travel_minutes": 4,
+      "distance_km": 2.0,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_stadium",
+      "source": "downtown_dallas",
+      "target": "stadium",
+      "road_name": "Gulf Freeway via South Loop West",
+      "capacity": 9600,
+      "base_travel_minutes": 16,
+      "distance_km": 14.2,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_stadium",
+      "source": "irving_gateway",
+      "target": "stadium",
+      "road_name": "Fannin Street",
+      "capacity": 9300,
+      "base_travel_minutes": 11,
+      "distance_km": 6.9,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_north_stadium",
+      "source": "arlington_north",
+      "target": "stadium",
+      "road_name": "Kirby Drive via Old Spanish Trail",
+      "capacity": 3400,
+      "base_travel_minutes": 6,
+      "distance_km": 2.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_stadium",
+      "source": "texas_live",
+      "target": "stadium",
+      "road_name": "Fannin Street via NRG Parkway",
+      "capacity": 1900,
+      "base_travel_minutes": 6,
+      "distance_km": 2.0,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_hotels_stadium",
+      "source": "arlington_hotels",
+      "target": "stadium",
+      "road_name": "Kirby Drive via McNee Road",
+      "capacity": 2200,
+      "base_travel_minutes": 6,
+      "distance_km": 2.4,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_stadium",
+      "source": "local_neighborhoods",
+      "target": "stadium",
+      "road_name": "Kirby Drive via Bellaire Boulevard",
+      "capacity": 3100,
+      "base_travel_minutes": 12,
+      "distance_km": 7.1,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_fanzone",
+      "source": "texas_live",
+      "target": "fanzone",
+      "road_name": "El Paseo Street via Cambridge Street",
+      "capacity": 1600,
+      "base_travel_minutes": 3,
+      "distance_km": 1.3,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_hotels",
+      "source": "local_neighborhoods",
+      "target": "arlington_hotels",
+      "road_name": "Bellaire Boulevard via Buffalo Speedway",
+      "capacity": 2600,
+      "base_travel_minutes": 8,
+      "distance_km": 5.1,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_arlington_north",
+      "source": "texas_live",
+      "target": "arlington_north",
+      "road_name": "Greenbriar Drive via Old Spanish Trail",
+      "capacity": 2400,
+      "base_travel_minutes": 3,
+      "distance_km": 1.5,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "fanzone_arlington_hotels",
+      "source": "fanzone",
+      "target": "arlington_hotels",
+      "road_name": "Old Spanish Trail via Knight Road",
+      "capacity": 2100,
+      "base_travel_minutes": 6,
+      "distance_km": 3.7,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_downtown",
+      "source": "las_colinas",
+      "target": "downtown_dallas",
+      "road_name": "Westheimer Road via Allen Parkway",
+      "capacity": 7000,
+      "base_travel_minutes": 13,
+      "distance_km": 11.6,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_uptown",
+      "source": "design_district",
+      "target": "uptown",
+      "road_name": "Main Street",
+      "capacity": 2500,
+      "base_travel_minutes": 4,
+      "distance_km": 2.5,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "design_stadium",
+      "source": "design_district",
+      "target": "stadium",
+      "road_name": "Fannin Street",
+      "capacity": 6100,
+      "base_travel_minutes": 10,
+      "distance_km": 5.8,
+      "kind": "highway",
+      "bidirectional": true
+    }
+  ],
+  "zones": [
+    {
+      "id": "stadium_zone",
+      "name": "NRG Stadium Bowl",
+      "kind": "stadium",
+      "node_id": "stadium",
+      "center": [
+        -95.4107,
+        29.6847
+      ],
+      "radius_m": 350,
+      "focus_color": "#F97316"
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Houston Fan Zone",
+      "kind": "fanzone",
+      "node_id": "fanzone",
+      "center": [
+        -95.3942,
+        29.6915
+      ],
+      "radius_m": 450,
+      "focus_color": "#F4B942"
+    },
+    {
+      "id": "texas_live_zone",
+      "name": "Stadium Entertainment District",
+      "kind": "bar_cluster",
+      "node_id": "texas_live",
+      "center": [
+        -95.4016,
+        29.6897
+      ],
+      "radius_m": 600,
+      "focus_color": "#F43F5E"
+    },
+    {
+      "id": "arlington_hotels_zone",
+      "name": "Stadium Hotel Cluster",
+      "kind": "hotel_cluster",
+      "node_id": "arlington_hotels",
+      "center": [
+        -95.4172,
+        29.6937
+      ],
+      "radius_m": 700,
+      "focus_color": "#22C55E"
+    },
+    {
+      "id": "local_zone",
+      "name": "Bellaire Neighborhoods",
+      "kind": "residential",
+      "node_id": "local_neighborhoods",
+      "center": [
+        -95.4489,
+        29.7041
+      ],
+      "radius_m": 850,
+      "focus_color": "#64748B"
+    },
+    {
+      "id": "las_colinas_zone",
+      "name": "Galleria Hotel District",
+      "kind": "hotel_cluster",
+      "node_id": "las_colinas",
+      "center": [
+        -95.461,
+        29.748
+      ],
+      "radius_m": 780,
+      "focus_color": "#0EA5E9"
+    },
+    {
+      "id": "downtown_zone",
+      "name": "Downtown Houston",
+      "kind": "hotel_cluster",
+      "node_id": "downtown_dallas",
+      "center": [
+        -95.3698,
+        29.7604
+      ],
+      "radius_m": 950,
+      "focus_color": "#14B8A6"
+    },
+    {
+      "id": "uptown_zone",
+      "name": "Midtown Houston",
+      "kind": "bar_cluster",
+      "node_id": "uptown",
+      "center": [
+        -95.3748,
+        29.7385
+      ],
+      "radius_m": 700,
+      "focus_color": "#8B5CF6"
+    },
+    {
+      "id": "deep_ellum_zone",
+      "name": "EaDo",
+      "kind": "bar_cluster",
+      "node_id": "deep_ellum",
+      "center": [
+        -95.3536,
+        29.7524
+      ],
+      "radius_m": 650,
+      "focus_color": "#EF4444"
+    },
+    {
+      "id": "airport_zone",
+      "name": "George Bush Intercontinental Airport",
+      "kind": "transport",
+      "node_id": "dfw_airport",
+      "center": [
+        -95.3368,
+        29.9902
+      ],
+      "radius_m": 1100,
+      "focus_color": "#3B82F6"
+    }
+  ],
+  "provenance": {
+    "seed_graph": "reduced host-city road simulation graph with city-specific corridor geometry",
+    "businesses": "seeded host-city venues curated for business-intelligence demos",
+    "weather": "baseline match weather profile with city-local kickoff timing",
+    "places_enrichment": "optional live Google Places overlay",
+    "llm_recommendations": "heuristic by default, optionally upgraded through Anthropic"
+  }
+}
