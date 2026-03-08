@@ -1,0 +1,14 @@
+streamlit
+numpy
+pandas
+plotly
+python-dotenv
+elevenlabs
+SpeechRecognition
+groq
+mediapipe==0.10.14
+opencv-python-headless
+matplotlib
+speechrecognition
+sounddevice
+streamlit_webrtc
