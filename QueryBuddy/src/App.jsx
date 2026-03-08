@@ -36,6 +36,12 @@ function SchemaPanel({ schema, collapsed, onToggle, onSchemaRefresh }) {
   const [mongoStatus, setMongoStatus] = useState("idle"); // idle|connecting|ok|err
   const [mongoMsg,    setMongoMsg]    = useState("");
 
+  // Create Database state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createDesc, setCreateDesc]         = useState("");
+  const [createStatus, setCreateStatus]     = useState("idle"); // idle|creating|ok|err
+  const [createMsg, setCreateMsg]           = useState("");
+
   // Table preview state
   // previewKey: "serviceName::tableName" of the currently open preview (or null)
   // previewData: { [key]: result | "loading" | "error" }
@@ -92,6 +98,33 @@ function SchemaPanel({ schema, collapsed, onToggle, onSchemaRefresh }) {
     } catch (e) {
       setMongoStatus("err");
       setMongoMsg(e.message);
+    }
+  };
+
+  const createDatabase = async () => {
+    if (!createDesc.trim()) return;
+    setCreateStatus("creating");
+    setCreateMsg("Generating schema & seed data...");
+    try {
+      const res = await fetch(`${API}/api/create-db`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: createDesc.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCreateStatus("err");
+        setCreateMsg(data.detail || "Creation failed.");
+      } else {
+        const tableCount = Object.keys(data.schema?.tables || {}).length;
+        setCreateStatus("ok");
+        setCreateMsg(`${data.service_name} created — ${tableCount} table${tableCount !== 1 ? "s" : ""}`);
+        onSchemaRefresh();
+        setTimeout(() => { setShowCreateForm(false); setCreateStatus("idle"); setCreateDesc(""); }, 3000);
+      }
+    } catch (e) {
+      setCreateStatus("err");
+      setCreateMsg(e.message);
     }
   };
 
@@ -207,6 +240,73 @@ function SchemaPanel({ schema, collapsed, onToggle, onSchemaRefresh }) {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* ── Create Database ──────────────────────────────────────────── */}
+          <div style={{ borderTop: "1px solid #1e1e24", padding: "10px 12px" }}>
+            {!showCreateForm ? (
+              <button
+                onClick={() => setShowCreateForm(true)}
+                style={{
+                  width: "100%", background: "#0d0d1a", border: "1px solid #1a1a3a",
+                  borderRadius: 6, padding: "7px 10px", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  color: "#a88bfa", fontSize: 11, fontFamily: "monospace", letterSpacing: 0.5,
+                  transition: "all 0.15s"
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = "#101020"}
+                onMouseLeave={e => e.currentTarget.style.background = "#0d0d1a"}
+              >
+                <span style={{ fontSize: 14 }}>+</span> Create Database
+              </button>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ color: "#a88bfa", fontSize: 10, fontFamily: "monospace", letterSpacing: 1 }}>
+                  CREATE DATABASE
+                </div>
+                <textarea
+                  value={createDesc}
+                  onChange={e => setCreateDesc(e.target.value)}
+                  placeholder="Describe the database you want, e.g. 'employees database with name, department, salary, hire date'"
+                  rows={3}
+                  style={{
+                    background: "#0a0a0c", border: "1px solid #2a2a38", borderRadius: 4,
+                    color: "#ccd4dd", fontSize: 10, fontFamily: "monospace", padding: "5px 8px",
+                    outline: "none", width: "100%", resize: "vertical"
+                  }}
+                />
+                {createMsg && (
+                  <div style={{
+                    fontSize: 10, fontFamily: "monospace", padding: "3px 0",
+                    color: createStatus === "ok" ? "#4dff91" : createStatus === "err" ? "#ff6b6b" : "#a88bfa"
+                  }}>{createMsg}</div>
+                )}
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button
+                    onClick={createDatabase}
+                    disabled={createStatus === "creating" || !createDesc.trim()}
+                    style={{
+                      flex: 1, background: createStatus === "creating" ? "#1e1e28" : "#a88bfa",
+                      border: "none", borderRadius: 4, padding: "5px 0",
+                      color: "#0d0d0f", fontFamily: "monospace", fontSize: 10, fontWeight: 700,
+                      cursor: createStatus === "creating" ? "not-allowed" : "pointer", letterSpacing: 0.5
+                    }}
+                  >
+                    {createStatus === "creating" ? "GENERATING..." : "CREATE"}
+                  </button>
+                  <button
+                    onClick={() => { setShowCreateForm(false); setCreateStatus("idle"); setCreateMsg(""); }}
+                    style={{
+                      background: "none", border: "1px solid #2a2a38", borderRadius: 4,
+                      padding: "5px 10px", color: "#556677", fontFamily: "monospace",
+                      fontSize: 10, cursor: "pointer"
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ── Connect MongoDB footer ───────────────────────────────────── */}
@@ -826,7 +926,7 @@ export default function App() {
           }}>
             {uploadStatus !== "idle"
               ? uploadMessage
-              : "Drop a .db · .sqlite · .sqlite3 file to register it as a new queryable service"}
+              : "Drop a .db · .sqlite · .sqlite3 · .xlsx file to register it as a new queryable service"}
           </div>
         </div>
       )}

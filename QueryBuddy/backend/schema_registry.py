@@ -65,10 +65,10 @@ CROSS_SERVICE_RELATIONSHIPS = [
 
 # ── Dynamic registration ──────────────────────────────────────────────────────
 
-def register_dynamic_service(service_name: str, db_path: str, db_type: str = "SQLite") -> None:
+def register_dynamic_service(service_name: str, db_path: str, db_type: str = "SQLite", description: str = "") -> None:
     """Hot-register a new SQLite service at runtime (drag-and-drop upload)."""
     SERVICES[service_name] = {
-        "description": f"Dynamically loaded database: {os.path.basename(db_path)}",
+        "description": description or f"Dynamically loaded database: {os.path.basename(db_path)}",
         "db_type": db_type,
         "db_path": db_path,
     }

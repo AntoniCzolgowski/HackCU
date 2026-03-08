@@ -118,6 +118,54 @@ def _strip_markdown_fences(raw: str) -> str:
     return raw.strip()
 
 
+CREATE_DB_PROMPT = """You are a database architect. The user will describe a database they want to create in plain English. You must generate:
+
+1. One or more CREATE TABLE statements with appropriate column types, primary keys, and constraints.
+2. INSERT statements to seed each table with realistic sample data (at least 8-12 rows per table).
+
+Use SQLite-compatible SQL syntax only.
+
+Your response must be valid JSON in this exact format:
+{
+  "db_name": "a short snake_case name for the database (no _service suffix)",
+  "description": "One-line description of the database",
+  "sql_statements": [
+    "CREATE TABLE ...",
+    "INSERT INTO ...",
+    "INSERT INTO ..."
+  ]
+}
+
+Rules:
+- Use INTEGER PRIMARY KEY AUTOINCREMENT for id columns
+- Use sensible column types: TEXT, INTEGER, REAL, DATE, DATETIME, BOOLEAN (0/1)
+- Add NOT NULL where appropriate
+- Add FOREIGN KEY constraints for relationships between tables
+- Generate realistic, diverse sample data (real-looking names, dates, values)
+- Order statements so CREATE TABLE comes before its INSERTs, and referenced tables are created before referencing tables
+- Do NOT include DROP TABLE statements
+- Do NOT wrap SQL in markdown fences — return raw JSON only
+"""
+
+
+def generate_create_db(description: str) -> dict:
+    """Ask Claude to generate CREATE TABLE + seed INSERT statements from a description."""
+    response = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=4096,
+        system=CREATE_DB_PROMPT,
+        messages=[{"role": "user", "content": description}],
+    )
+
+    raw = response.content[0].text.strip()
+    raw = _strip_markdown_fences(raw)
+
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return {"error": "Failed to parse Claude's response.", "raw": raw[:1000]}
+
+
 def generate_sql(user_message: str, schema_context: str, conversation_history: list) -> dict:
     """
     Build the messages array for the Claude API and return parsed JSON.

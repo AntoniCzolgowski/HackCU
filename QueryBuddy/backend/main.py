@@ -10,12 +10,13 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from mock_dbs.setup_databases import setup_all
 from mock_dbs.setup_mongo import setup_analytics_mongo
+from mock_dbs.setup_bar import setup_bar
 from schema_registry import (
     get_full_registry, build_schema_context,
     is_read_query, is_schema_modifying_query, execute_query,
     register_dynamic_service, register_mongo_service, BASE_DIR,
 )
-from claude_service import generate_sql
+from claude_service import generate_sql, generate_create_db
 
 # SQLite files always start with this 16-byte header
 SQLITE_MAGIC = b"SQLite format 3\x00"
@@ -38,6 +39,15 @@ def startup():
     global registry, schema_context
     # SQLite mock services
     setup_all()
+    # Bar/restaurant mock service (MongoDB — requires local mongod)
+    bar_client = setup_bar()
+    if bar_client:
+        register_mongo_service(
+            service_name="bar_service",
+            client=bar_client,
+            db_name="bar",
+            description="Bar & restaurant — drinks, food, employees, tabs, inventory, shifts (MongoDB)",
+        )
     # MongoDB mock service (in-memory via mongomock — no server needed)
     mongo_client = setup_analytics_mongo()
     if mongo_client:
@@ -69,6 +79,9 @@ class MongoConnectRequest(BaseModel):
     connection_string: str   # e.g. "mongodb://localhost:27017"
     db_name: str             # database to expose
     service_name: Optional[str] = None  # auto-derived if omitted
+
+class CreateDbRequest(BaseModel):
+    description: str  # plain-English description of the desired database
 
 # ---- Routes ----
 
@@ -130,6 +143,69 @@ def query(req: QueryRequest):
     return result
 
 
+@app.post("/api/create-db")
+def create_db(req: CreateDbRequest):
+    """
+    Create a new SQLite database from a plain-English description.
+    Claude generates the schema (CREATE TABLE) and seed data (INSERT).
+    """
+    global registry, schema_context
+    import sqlite3
+
+    desc = req.description.strip()
+    if not desc:
+        raise HTTPException(status_code=400, detail="Description cannot be empty.")
+    if len(desc) > MAX_MESSAGE_LENGTH:
+        raise HTTPException(status_code=400, detail="Description too long.")
+
+    # Ask Claude to generate the SQL
+    result = generate_create_db(desc)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    db_name = re.sub(r'[^a-z0-9]+', '_', result.get("db_name", "custom_db").lower()).strip('_')
+    description = result.get("description", f"User-created database: {db_name}")
+    statements = result.get("sql_statements", [])
+
+    if not statements:
+        raise HTTPException(status_code=400, detail="Claude did not generate any SQL statements.")
+
+    # Derive unique service name
+    base_service = db_name + "_service"
+    service_name = base_service
+    counter = 2
+    while service_name in registry:
+        service_name = f"{db_name}_{counter}_service"
+        counter += 1
+
+    # Create the SQLite database and execute all statements
+    db_path = os.path.join(BASE_DIR, f"{service_name}.db")
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        for stmt in statements:
+            cursor.execute(stmt)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        # Clean up the file on failure
+        if os.path.exists(db_path):
+            os.remove(db_path)
+        raise HTTPException(status_code=400, detail=f"SQL execution failed: {e}")
+
+    # Register and rebuild schema
+    register_dynamic_service(service_name, db_path)
+    registry = get_full_registry()
+    schema_context = build_schema_context(registry)
+
+    return {
+        "service_name": service_name,
+        "description": description,
+        "schema": registry[service_name],
+        "statements_executed": len(statements),
+    }
+
+
 @app.post("/api/connect-mongo")
 def connect_mongo(req: MongoConnectRequest):
     """
@@ -170,46 +246,131 @@ def connect_mongo(req: MongoConnectRequest):
 @app.post("/api/upload-db")
 async def upload_db(file: UploadFile = File(...)):
     """
-    Accept a drag-and-dropped SQLite database file, validate it, save it to
-    mock_dbs/, register it as a live service, and rebuild the schema context
-    so Claude immediately knows about the new tables.
+    Accept a drag-and-dropped database file, save/convert it to SQLite,
+    register it as a live service, and rebuild the schema context.
+    Supports: .db / .sqlite / .sqlite3 (native SQLite) and .xlsx / .xls (Excel).
     """
     global registry, schema_context
 
-    # ── 1. Extension check ────────────────────────────────────────────────────
     filename = file.filename or ""
-    if not re.search(r'\.(db|sqlite|sqlite3)$', filename, re.IGNORECASE):
+    is_sqlite = bool(re.search(r'\.(db|sqlite|sqlite3)$', filename, re.IGNORECASE))
+    is_excel  = bool(re.search(r'\.xlsx?$', filename, re.IGNORECASE))
+
+    if not is_sqlite and not is_excel:
         raise HTTPException(
             status_code=400,
-            detail="Only .db, .sqlite, or .sqlite3 files are accepted."
+            detail="Only .db, .sqlite, .sqlite3, .xlsx, or .xls files are accepted."
         )
 
-    # ── 2. Read & magic-byte check ────────────────────────────────────────────
     content = await file.read()
-    if not content.startswith(SQLITE_MAGIC):
-        raise HTTPException(
-            status_code=400,
-            detail="File does not appear to be a valid SQLite database."
-        )
 
-    # ── 3. Derive a unique service name from the filename ─────────────────────
-    stem = re.sub(r'\.(db|sqlite|sqlite3)$', '', filename, flags=re.IGNORECASE)
+    # ── Derive a unique service name from the filename ────────────────────────
+    stem = re.sub(r'\.(db|sqlite|sqlite3|xlsx|xls)$', '', filename, flags=re.IGNORECASE)
     base_name = re.sub(r'[^a-z0-9]+', '_', stem.lower()).strip('_')
     base_service = base_name + "_service"
 
-    # Avoid collisions with existing services
     service_name = base_service
     counter = 2
     while service_name in registry:
         service_name = f"{base_name}_{counter}_service"
         counter += 1
 
-    # ── 4. Save to mock_dbs/ ──────────────────────────────────────────────────
     db_path = os.path.join(BASE_DIR, f"{service_name}.db")
-    with open(db_path, "wb") as f:
-        f.write(content)
 
-    # ── 5. Register & rebuild schema ──────────────────────────────────────────
+    if is_sqlite:
+        # ── Native SQLite: validate magic bytes and save directly ─────────────
+        if not content.startswith(SQLITE_MAGIC):
+            raise HTTPException(
+                status_code=400,
+                detail="File does not appear to be a valid SQLite database."
+            )
+        with open(db_path, "wb") as f:
+            f.write(content)
+
+    elif is_excel:
+        # ── Excel: convert each sheet into a SQLite table ─────────────────────
+        import sqlite3, io, tempfile
+        try:
+            from openpyxl import load_workbook
+        except ImportError:
+            raise HTTPException(
+                status_code=500,
+                detail="openpyxl is not installed. Run: pip install openpyxl"
+            )
+
+        try:
+            wb = load_workbook(filename=io.BytesIO(content), read_only=True, data_only=True)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Cannot read Excel file: {e}")
+
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        tables_created = 0
+
+        for sheet_name in wb.sheetnames:
+            ws = wb[sheet_name]
+            rows = list(ws.iter_rows(values_only=True))
+            if not rows or len(rows) < 2:
+                continue  # skip empty sheets or sheets with only headers
+
+            # First row = column headers
+            raw_headers = rows[0]
+            headers = []
+            for i, h in enumerate(raw_headers):
+                col_name = re.sub(r'[^a-z0-9_]+', '_', str(h or f"col_{i}").lower()).strip('_')
+                if not col_name:
+                    col_name = f"col_{i}"
+                headers.append(col_name)
+
+            # Sanitize table name
+            table_name = re.sub(r'[^a-z0-9_]+', '_', sheet_name.lower()).strip('_') or "sheet"
+
+            # Infer column types from first few data rows
+            col_types = []
+            for ci in range(len(headers)):
+                sample_vals = [rows[ri][ci] for ri in range(1, min(len(rows), 20)) if ci < len(rows[ri])]
+                sample_vals = [v for v in sample_vals if v is not None]
+                if all(isinstance(v, (int,)) for v in sample_vals) and sample_vals:
+                    col_types.append("INTEGER")
+                elif all(isinstance(v, (int, float)) for v in sample_vals) and sample_vals:
+                    col_types.append("REAL")
+                else:
+                    col_types.append("TEXT")
+
+            col_defs = ", ".join(f'"{h}" {col_types[i]}' for i, h in enumerate(headers))
+            cursor.execute(f'CREATE TABLE IF NOT EXISTS "{table_name}" ({col_defs})')
+
+            placeholders = ", ".join("?" * len(headers))
+            for row in rows[1:]:
+                # Pad or trim row to match header count
+                padded = list(row[:len(headers)])
+                while len(padded) < len(headers):
+                    padded.append(None)
+                # Convert values to strings for TEXT columns, keep native for others
+                cleaned = []
+                for ci, val in enumerate(padded):
+                    if val is None:
+                        cleaned.append(None)
+                    elif col_types[ci] == "TEXT":
+                        cleaned.append(str(val))
+                    else:
+                        cleaned.append(val)
+                cursor.execute(f'INSERT INTO "{table_name}" VALUES ({placeholders})', cleaned)
+            tables_created += 1
+
+        conn.commit()
+        conn.close()
+        wb.close()
+
+        if tables_created == 0:
+            if os.path.exists(db_path):
+                os.remove(db_path)
+            raise HTTPException(
+                status_code=400,
+                detail="No sheets with data found in the Excel file."
+            )
+
+    # ── Register & rebuild schema ─────────────────────────────────────────────
     register_dynamic_service(service_name, db_path)
     registry = get_full_registry()
     schema_context = build_schema_context(registry)
