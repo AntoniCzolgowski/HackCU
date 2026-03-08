@@ -1,0 +1,22 @@
+{
+  "special_venues": [
+    {
+      "id": "stadium_zone",
+      "name": "NRG Stadium",
+      "entity_type": "stadium",
+      "zone_id": "stadium_zone",
+      "lat": 29.6847,
+      "lng": -95.4107,
+      "comfort_capacity": 72000
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Houston Fan Zone",
+      "entity_type": "fanzone",
+      "zone_id": "fanzone_zone",
+      "lat": 29.6915,
+      "lng": -95.3942,
+      "comfort_capacity": 20000
+    }
+  ]
+}

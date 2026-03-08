@@ -1,0 +1,452 @@
+{
+  "city": {
+    "city_id": "dallas",
+    "name": "Dallas-Arlington",
+    "venue_name": "AT&T Stadium",
+    "venue_capacity": 80000,
+    "country": "USA",
+    "timezone": "America/Chicago",
+    "default_map_center": [
+      -96.98,
+      32.78
+    ],
+    "default_map_zoom": 9.5
+  },
+  "nodes": [
+    {
+      "id": "dfw_airport",
+      "label": "DFW Airport",
+      "lat": 32.8998,
+      "lng": -97.0403
+    },
+    {
+      "id": "grapevine_junction",
+      "label": "Grapevine Junction",
+      "lat": 32.8765,
+      "lng": -97.0875
+    },
+    {
+      "id": "las_colinas",
+      "label": "Las Colinas",
+      "lat": 32.8686,
+      "lng": -96.9394
+    },
+    {
+      "id": "irving_gateway",
+      "label": "Irving Gateway",
+      "lat": 32.8146,
+      "lng": -96.9731
+    },
+    {
+      "id": "design_district",
+      "label": "Design District",
+      "lat": 32.7929,
+      "lng": -96.8269
+    },
+    {
+      "id": "downtown_dallas",
+      "label": "Downtown Dallas",
+      "lat": 32.7792,
+      "lng": -96.8003
+    },
+    {
+      "id": "uptown",
+      "label": "Uptown",
+      "lat": 32.7987,
+      "lng": -96.8044
+    },
+    {
+      "id": "deep_ellum",
+      "label": "Deep Ellum",
+      "lat": 32.7846,
+      "lng": -96.7813
+    },
+    {
+      "id": "arlington_north",
+      "label": "Arlington North",
+      "lat": 32.7818,
+      "lng": -97.1167
+    },
+    {
+      "id": "stadium",
+      "label": "AT&T Stadium",
+      "lat": 32.7473,
+      "lng": -97.0945
+    },
+    {
+      "id": "texas_live",
+      "label": "Texas Live!",
+      "lat": 32.7479,
+      "lng": -97.0839
+    },
+    {
+      "id": "arlington_hotels",
+      "label": "Arlington Hotels",
+      "lat": 32.7422,
+      "lng": -97.1111
+    },
+    {
+      "id": "local_neighborhoods",
+      "label": "Arlington Neighborhoods",
+      "lat": 32.7171,
+      "lng": -97.1352
+    },
+    {
+      "id": "fanzone",
+      "label": "FIFA Fanzone",
+      "lat": 32.7574,
+      "lng": -97.0715
+    }
+  ],
+  "edges": [
+    {
+      "id": "dfw_grapevine",
+      "source": "dfw_airport",
+      "target": "grapevine_junction",
+      "road_name": "TX-121 Connector",
+      "capacity": 8200,
+      "base_travel_minutes": 11,
+      "distance_km": 10.5,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "grapevine_las_colinas",
+      "source": "grapevine_junction",
+      "target": "las_colinas",
+      "road_name": "President George Bush Turnpike",
+      "capacity": 7800,
+      "base_travel_minutes": 12,
+      "distance_km": 13.2,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_irving",
+      "source": "las_colinas",
+      "target": "irving_gateway",
+      "road_name": "SH-114",
+      "capacity": 7600,
+      "base_travel_minutes": 8,
+      "distance_km": 9.1,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_design",
+      "source": "irving_gateway",
+      "target": "design_district",
+      "road_name": "I-30 Westbound",
+      "capacity": 8900,
+      "base_travel_minutes": 15,
+      "distance_km": 16.8,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_downtown",
+      "source": "design_district",
+      "target": "downtown_dallas",
+      "road_name": "Stemmons Corridor",
+      "capacity": 5400,
+      "base_travel_minutes": 8,
+      "distance_km": 7.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_uptown",
+      "source": "downtown_dallas",
+      "target": "uptown",
+      "road_name": "North Harwood Street",
+      "capacity": 3200,
+      "base_travel_minutes": 7,
+      "distance_km": 4.3,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_deep_ellum",
+      "source": "downtown_dallas",
+      "target": "deep_ellum",
+      "road_name": "Elm Street",
+      "capacity": 2800,
+      "base_travel_minutes": 6,
+      "distance_km": 3.0,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_stadium",
+      "source": "downtown_dallas",
+      "target": "stadium",
+      "road_name": "I-30 Mainline",
+      "capacity": 9600,
+      "base_travel_minutes": 28,
+      "distance_km": 29.8,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_stadium",
+      "source": "irving_gateway",
+      "target": "stadium",
+      "road_name": "TX-360 Corridor",
+      "capacity": 9300,
+      "base_travel_minutes": 21,
+      "distance_km": 23.1,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_north_stadium",
+      "source": "arlington_north",
+      "target": "stadium",
+      "road_name": "Collins Street",
+      "capacity": 3400,
+      "base_travel_minutes": 8,
+      "distance_km": 5.1,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_stadium",
+      "source": "texas_live",
+      "target": "stadium",
+      "road_name": "Ballpark Way",
+      "capacity": 1900,
+      "base_travel_minutes": 3,
+      "distance_km": 0.9,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_hotels_stadium",
+      "source": "arlington_hotels",
+      "target": "stadium",
+      "road_name": "Randol Mill Spur",
+      "capacity": 2200,
+      "base_travel_minutes": 7,
+      "distance_km": 2.7,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_stadium",
+      "source": "local_neighborhoods",
+      "target": "stadium",
+      "road_name": "Pioneer Parkway",
+      "capacity": 3100,
+      "base_travel_minutes": 10,
+      "distance_km": 6.6,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_fanzone",
+      "source": "texas_live",
+      "target": "fanzone",
+      "road_name": "Entertainment District Connector",
+      "capacity": 1600,
+      "base_travel_minutes": 5,
+      "distance_km": 1.8,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_hotels",
+      "source": "local_neighborhoods",
+      "target": "arlington_hotels",
+      "road_name": "Cooper Street",
+      "capacity": 2600,
+      "base_travel_minutes": 9,
+      "distance_km": 5.9,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_arlington_north",
+      "source": "texas_live",
+      "target": "arlington_north",
+      "road_name": "Division Connector",
+      "capacity": 2400,
+      "base_travel_minutes": 6,
+      "distance_km": 3.1,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "fanzone_arlington_hotels",
+      "source": "fanzone",
+      "target": "arlington_hotels",
+      "road_name": "North Center Street",
+      "capacity": 2100,
+      "base_travel_minutes": 8,
+      "distance_km": 3.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_downtown",
+      "source": "las_colinas",
+      "target": "downtown_dallas",
+      "road_name": "SH-183 Express",
+      "capacity": 7000,
+      "base_travel_minutes": 18,
+      "distance_km": 20.4,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_uptown",
+      "source": "design_district",
+      "target": "uptown",
+      "road_name": "Hi Line Drive",
+      "capacity": 2500,
+      "base_travel_minutes": 5,
+      "distance_km": 3.1,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "design_stadium",
+      "source": "design_district",
+      "target": "stadium",
+      "road_name": "I-30 Secondary",
+      "capacity": 6100,
+      "base_travel_minutes": 24,
+      "distance_km": 26.4,
+      "kind": "highway",
+      "bidirectional": true
+    }
+  ],
+  "zones": [
+    {
+      "id": "stadium_zone",
+      "name": "AT&T Stadium Bowl",
+      "kind": "stadium",
+      "node_id": "stadium",
+      "center": [
+        -97.0945,
+        32.7473
+      ],
+      "radius_m": 350,
+      "focus_color": "#F97316"
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "FIFA Fanzone",
+      "kind": "fanzone",
+      "node_id": "fanzone",
+      "center": [
+        -97.0715,
+        32.7574
+      ],
+      "radius_m": 450,
+      "focus_color": "#F4B942"
+    },
+    {
+      "id": "texas_live_zone",
+      "name": "Entertainment District",
+      "kind": "bar_cluster",
+      "node_id": "texas_live",
+      "center": [
+        -97.0839,
+        32.7479
+      ],
+      "radius_m": 600,
+      "focus_color": "#F43F5E"
+    },
+    {
+      "id": "arlington_hotels_zone",
+      "name": "Arlington Hotel Cluster",
+      "kind": "hotel_cluster",
+      "node_id": "arlington_hotels",
+      "center": [
+        -97.1111,
+        32.7422
+      ],
+      "radius_m": 700,
+      "focus_color": "#22C55E"
+    },
+    {
+      "id": "local_zone",
+      "name": "Local Neighborhoods",
+      "kind": "residential",
+      "node_id": "local_neighborhoods",
+      "center": [
+        -97.1352,
+        32.7171
+      ],
+      "radius_m": 850,
+      "focus_color": "#64748B"
+    },
+    {
+      "id": "las_colinas_zone",
+      "name": "Las Colinas Hotels",
+      "kind": "hotel_cluster",
+      "node_id": "las_colinas",
+      "center": [
+        -96.9394,
+        32.8686
+      ],
+      "radius_m": 780,
+      "focus_color": "#0EA5E9"
+    },
+    {
+      "id": "downtown_zone",
+      "name": "Downtown Dallas",
+      "kind": "hotel_cluster",
+      "node_id": "downtown_dallas",
+      "center": [
+        -96.8003,
+        32.7792
+      ],
+      "radius_m": 950,
+      "focus_color": "#14B8A6"
+    },
+    {
+      "id": "uptown_zone",
+      "name": "Uptown Dallas",
+      "kind": "bar_cluster",
+      "node_id": "uptown",
+      "center": [
+        -96.8044,
+        32.7987
+      ],
+      "radius_m": 700,
+      "focus_color": "#8B5CF6"
+    },
+    {
+      "id": "deep_ellum_zone",
+      "name": "Deep Ellum",
+      "kind": "bar_cluster",
+      "node_id": "deep_ellum",
+      "center": [
+        -96.7813,
+        32.7846
+      ],
+      "radius_m": 650,
+      "focus_color": "#EF4444"
+    },
+    {
+      "id": "airport_zone",
+      "name": "DFW Airport",
+      "kind": "transport",
+      "node_id": "dfw_airport",
+      "center": [
+        -97.0403,
+        32.8998
+      ],
+      "radius_m": 1100,
+      "focus_color": "#3B82F6"
+    }
+  ],
+  "provenance": {
+    "seed_graph": "reduced major-road simulation graph with road-aligned display geometry derived from open routing",
+    "businesses": "seeded real venues with curated metadata and approximate point placement",
+    "weather": "baseline from open weather style profile, replaceable via Open-Meteo refresh",
+    "places_enrichment": "optional live Google Places overlay",
+    "llm_recommendations": "heuristic by default, optionally upgraded through Anthropic"
+  }
+}

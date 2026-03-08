@@ -1,0 +1,22 @@
+{
+  "special_venues": [
+    {
+      "id": "stadium_zone",
+      "name": "Estadio BBVA",
+      "entity_type": "stadium",
+      "zone_id": "stadium_zone",
+      "lat": 25.6693,
+      "lng": -100.2441,
+      "comfort_capacity": 53000
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Monterrey Fan Zone",
+      "entity_type": "fanzone",
+      "zone_id": "fanzone_zone",
+      "lat": 25.6748,
+      "lng": -100.2543,
+      "comfort_capacity": 17000
+    }
+  ]
+}

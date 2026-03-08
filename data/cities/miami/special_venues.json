@@ -1,0 +1,22 @@
+{
+  "special_venues": [
+    {
+      "id": "stadium_zone",
+      "name": "Hard Rock Stadium",
+      "entity_type": "stadium",
+      "zone_id": "stadium_zone",
+      "lat": 25.958,
+      "lng": -80.2389,
+      "comfort_capacity": 65000
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Miami Fan Zone",
+      "entity_type": "fanzone",
+      "zone_id": "fanzone_zone",
+      "lat": 25.9497,
+      "lng": -80.2281,
+      "comfort_capacity": 22000
+    }
+  ]
+}
