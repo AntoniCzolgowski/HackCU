@@ -1,6 +1,6 @@
 # ValueBet IQ
 
-ValueBet IQ is a production-style hackathon web app for FIFA World Cup betting decision support.
+ValueBet IQ is a production-style web app for FIFA World Cup betting decision support.
 
 It helps a user:
 1. Select a game.
@@ -27,7 +27,7 @@ It helps a user:
 - Polling worker with `httpx` + retry/backoff
 - SQLAlchemy + Alembic
 - Postgres
-- Streamlit dashboard (6 pages, futuristic dark UI)
+- Streamlit dashboard 
 - Docker Compose
 
 ## Project Structure
