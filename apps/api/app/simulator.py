@@ -403,6 +403,36 @@ class SimulationEngine:
             options = [(step, weight * (1.12 if step <= 18 else 0.94)) for step, weight in options]
         return self._weighted_choice(rng, options)
 
+    def _step_for_clock(self, hour: int, minute: int = 0) -> int:
+        total_minutes = hour * 60 + minute
+        start_minutes = int(self.timeline["start_hour"]) * 60
+        return max(0, min(self.steps_per_day, round((total_minutes - start_minutes) / self.step_minutes)))
+
+    def _intent_reference_step(self, start_step: int, end_step: int) -> int:
+        if end_step <= start_step:
+            return max(0, min(self.steps_per_day - 1, start_step))
+        midpoint = start_step + max(0, (end_step - start_step - 1) // 2)
+        return max(0, min(self.steps_per_day - 1, midpoint))
+
+    def _choose_wake_step(self, rng: random.Random, cohort: Cohort, day: int) -> int:
+        options = [
+            (self._step_for_clock(8, 0), 0.24),
+            (self._step_for_clock(8, 30), 0.36),
+            (self._step_for_clock(9, 0), 0.26),
+            (self._step_for_clock(9, 30), 0.14),
+        ]
+        if cohort.nationality == "locals":
+            options = [(step, weight * (1.18 if step <= self._step_for_clock(8, 30) else 0.88)) for step, weight in options]
+        if self._is_overnight_traveler(cohort):
+            options = [(step, weight * (1.16 if step >= self._step_for_clock(9, 0) else 0.9)) for step, weight in options]
+        if cohort.alcohol_profile == "high":
+            options = [(step, weight * (1.14 if step >= self._step_for_clock(9, 0) else 0.84)) for step, weight in options]
+        if cohort.has_ticket and day == 0:
+            options = [(step, weight * (1.08 if step <= self._step_for_clock(8, 30) else 0.94)) for step, weight in options]
+        if day == 1:
+            options = [(step, weight * (1.12 if step >= self._step_for_clock(9, 0) else 0.86)) for step, weight in options]
+        return self._weighted_choice(rng, options)
+
     def _build_day_minus_one_intents(self, cohort: Cohort, rng: random.Random) -> list[ActivityIntent]:
         if cohort.nationality != "locals" and cohort.arrival_day == 0:
             return []
@@ -416,33 +446,71 @@ class SimulationEngine:
                     4,
                     12,
                     "check_in",
-                    self._pick_business(rng, cohort, cohort.lodging_zone_id, "hotel"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        cohort.lodging_zone_id,
+                        "hotel",
+                        self._intent_reference_step(4, 12),
+                    ),
                     0.38,
                 )
             )
         else:
             morning_zone = cohort.home_zone_id if cohort.nationality == "locals" else cohort.lodging_zone_id
+            wake_step = self._choose_wake_step(rng, cohort, -1)
+            if wake_step > 0:
+                intents.append(
+                    ActivityIntent(
+                        morning_zone,
+                        0,
+                        wake_step,
+                        "overnight_stay" if cohort.nationality != "locals" else "home",
+                        self._pick_business(
+                            rng,
+                            cohort,
+                            morning_zone,
+                            "hotel",
+                            self._intent_reference_step(0, wake_step),
+                        ) if cohort.nationality != "locals" else None,
+                        0.1 if cohort.nationality != "locals" else 0.0,
+                    )
+                )
+            breakfast_end = min(16, max(wake_step + 4, self._step_for_clock(9, 30)))
             intents.append(
                 ActivityIntent(
                     morning_zone,
-                    0,
-                    12,
+                    wake_step,
+                    breakfast_end,
                     "breakfast",
-                    self._pick_business(rng, cohort, morning_zone, "breakfast"),
-                    0.52,
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        morning_zone,
+                        "breakfast",
+                        self._intent_reference_step(wake_step, breakfast_end),
+                    ),
+                    0.28 if cohort.nationality != "locals" else 0.18,
                 )
             )
 
         midday_zone = self._choose_explore_zone(rng, cohort, allow_stadium=False)
         evening_zone = self._choose_pre_evening_zone(rng, cohort)
         late_zone = cohort.lodging_zone_id if cohort.nationality != "locals" else "local_zone"
+        midday_start = 12 if cohort.arrival_day == -1 else breakfast_end
         intents.append(
             ActivityIntent(
                 midday_zone,
-                12,
+                midday_start,
                 28,
                 "explore_city",
-                self._pick_business(rng, cohort, midday_zone, "explore"),
+                self._pick_business(
+                    rng,
+                    cohort,
+                    midday_zone,
+                    "explore",
+                    self._intent_reference_step(midday_start, 28),
+                ),
                 0.44,
             )
         )
@@ -452,7 +520,13 @@ class SimulationEngine:
                 28,
                 46,
                 "day_before_bar",
-                self._pick_business(rng, cohort, evening_zone, "prematch"),
+                self._pick_business(
+                    rng,
+                    cohort,
+                    evening_zone,
+                    "prematch",
+                    self._intent_reference_step(28, 46),
+                ),
                 0.78,
             )
         )
@@ -463,7 +537,13 @@ class SimulationEngine:
                     46,
                     58,
                     "hotel_reset",
-                    self._pick_business(rng, cohort, late_zone, "hotel"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        late_zone,
+                        "hotel",
+                        self._intent_reference_step(46, 58),
+                    ),
                     0.26,
                 )
             )
@@ -473,7 +553,13 @@ class SimulationEngine:
                     58,
                     80,
                     "overnight_stay",
-                    self._pick_business(rng, cohort, late_zone, "hotel"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        late_zone,
+                        "hotel",
+                        self._intent_reference_step(58, 80),
+                    ),
                     0.1,
                 )
             )
@@ -484,7 +570,13 @@ class SimulationEngine:
                     46,
                     72,
                     "hotel_reset",
-                    self._pick_business(rng, cohort, late_zone, "hotel"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        late_zone,
+                        "hotel",
+                        self._intent_reference_step(46, 72),
+                    ),
                     0.35,
                 )
             )
@@ -494,7 +586,13 @@ class SimulationEngine:
                     72,
                     80,
                     "late_night",
-                    self._pick_business(rng, cohort, late_zone, "hotel"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        late_zone,
+                        "hotel",
+                        self._intent_reference_step(72, 80),
+                    ),
                     0.18,
                 )
             )
@@ -517,30 +615,69 @@ class SimulationEngine:
                     6,
                     14,
                     "check_in",
-                    self._pick_business(rng, cohort, base_zone, "hotel"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        base_zone,
+                        "hotel",
+                        self._intent_reference_step(6, 14),
+                    ),
                     0.41,
                 )
             )
+            morning_end = 14
         else:
+            wake_step = self._choose_wake_step(rng, cohort, 0)
+            if wake_step > 0:
+                intents.append(
+                    ActivityIntent(
+                        base_zone,
+                        0,
+                        wake_step,
+                        "overnight_stay" if cohort.nationality != "locals" else "home",
+                        self._pick_business(
+                            rng,
+                            cohort,
+                            base_zone,
+                            "hotel",
+                            self._intent_reference_step(0, wake_step),
+                        ) if cohort.nationality != "locals" else None,
+                        0.1 if cohort.nationality != "locals" else 0.0,
+                    )
+                )
+            breakfast_end = min(explore_end, max(wake_step + 4, self._step_for_clock(9, 30)))
             intents.append(
                 ActivityIntent(
                     base_zone,
-                    0,
-                    14,
+                    wake_step,
+                    breakfast_end,
                     "wake",
-                    self._pick_business(rng, cohort, base_zone, "breakfast"),
-                    0.46,
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        base_zone,
+                        "breakfast",
+                        self._intent_reference_step(wake_step, breakfast_end),
+                    ),
+                    0.26 if cohort.nationality != "locals" else 0.18,
                 )
             )
+            morning_end = breakfast_end
 
         midday_zone = self._choose_explore_zone(rng, cohort, allow_stadium=False)
         intents.append(
             ActivityIntent(
                 midday_zone,
-                14,
+                morning_end,
                 explore_end,
                 "explore_city",
-                self._pick_business(rng, cohort, midday_zone, "explore"),
+                self._pick_business(
+                    rng,
+                    cohort,
+                    midday_zone,
+                    "explore",
+                    self._intent_reference_step(morning_end, explore_end),
+                ),
                 0.64,
             )
         )
@@ -553,7 +690,13 @@ class SimulationEngine:
                     pre_match_start,
                     pre_match_end,
                     "pre_match_bar",
-                    self._pick_business(rng, cohort, pre_match_zone, "prematch"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        pre_match_zone,
+                        "prematch",
+                        self._intent_reference_step(pre_match_start, pre_match_end),
+                    ),
                     0.91,
                 )
             )
@@ -566,7 +709,13 @@ class SimulationEngine:
                     pre_match_start,
                     pre_match_end,
                     "watch_party_setup",
-                    self._pick_business(rng, cohort, watch_zone, "prematch"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        watch_zone,
+                        "prematch",
+                        self._intent_reference_step(pre_match_start, pre_match_end),
+                    ),
                     0.72,
                 )
             )
@@ -576,7 +725,13 @@ class SimulationEngine:
                     pre_match_end,
                     match_end,
                     "watch_party",
-                    self._pick_business(rng, cohort, watch_zone, "watch_party"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        watch_zone,
+                        "watch_party",
+                        self._intent_reference_step(pre_match_end, match_end),
+                    ),
                     0.86,
                 )
             )
@@ -588,7 +743,13 @@ class SimulationEngine:
                 match_end,
                 post_match_end,
                 "celebration",
-                self._pick_business(rng, cohort, post_zone, "celebration"),
+                self._pick_business(
+                    rng,
+                    cohort,
+                    post_zone,
+                    "celebration",
+                    self._intent_reference_step(match_end, post_match_end),
+                ),
                 0.82,
             )
         )
@@ -598,7 +759,13 @@ class SimulationEngine:
                 post_match_end,
                 80,
                 "overnight_stay" if self._is_overnight_traveler(cohort) else "return",
-                self._pick_business(rng, cohort, base_zone, "hotel"),
+                self._pick_business(
+                    rng,
+                    cohort,
+                    base_zone,
+                    "hotel",
+                    self._intent_reference_step(post_match_end, 80),
+                ),
                 0.3 if self._is_overnight_traveler(cohort) else 0.24,
             )
         )
@@ -606,14 +773,36 @@ class SimulationEngine:
 
     def _build_day_plus_one_intents(self, cohort: Cohort, rng: random.Random) -> list[ActivityIntent]:
         base_zone = cohort.lodging_zone_id if cohort.nationality != "locals" else "local_zone"
+        wake_step = self._choose_wake_step(rng, cohort, 1)
+        breakfast_end = max(wake_step + 4, self._step_for_clock(9, 30))
         intents: list[ActivityIntent] = [
             ActivityIntent(
                 base_zone,
                 0,
-                14,
+                wake_step,
+                "overnight_stay" if cohort.nationality != "locals" else "home",
+                self._pick_business(
+                    rng,
+                    cohort,
+                    base_zone,
+                    "hotel",
+                    self._intent_reference_step(0, wake_step),
+                ) if cohort.nationality != "locals" else None,
+                0.1 if cohort.nationality != "locals" else 0.0,
+            ),
+            ActivityIntent(
+                base_zone,
+                wake_step,
+                breakfast_end,
                 "slow_morning",
-                self._pick_business(rng, cohort, base_zone, "breakfast"),
-                0.44,
+                self._pick_business(
+                    rng,
+                    cohort,
+                    base_zone,
+                    "breakfast",
+                    self._intent_reference_step(wake_step, breakfast_end),
+                ),
+                0.24 if cohort.nationality != "locals" else 0.16,
             ),
         ]
         if cohort.nationality == "locals":
@@ -621,10 +810,16 @@ class SimulationEngine:
             intents.append(
                 ActivityIntent(
                     quiet_zone,
-                    14,
+                    breakfast_end,
                     42,
                     "local_recovery",
-                    self._pick_business(rng, cohort, quiet_zone, "quiet"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        quiet_zone,
+                        "quiet",
+                        self._intent_reference_step(breakfast_end, 42),
+                    ),
                     0.24,
                 )
             )
@@ -635,7 +830,13 @@ class SimulationEngine:
                     42,
                     60,
                     "city_reset",
-                    self._pick_business(rng, cohort, city_zone, "quiet"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        city_zone,
+                        "quiet",
+                        self._intent_reference_step(42, 60),
+                    ),
                     0.32,
                 )
             )
@@ -645,7 +846,13 @@ class SimulationEngine:
                     60,
                     80,
                     "home",
-                    self._pick_business(rng, cohort, "local_zone", "quiet"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        "local_zone",
+                        "quiet",
+                        self._intent_reference_step(60, 80),
+                    ),
                     0.18,
                 )
             )
@@ -658,17 +865,29 @@ class SimulationEngine:
                 ActivityIntent(
                     base_zone,
                     0,
-                    12,
+                    wake_step,
                     "overnight_stay",
-                    self._pick_business(rng, cohort, base_zone, "hotel"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        base_zone,
+                        "hotel",
+                        self._intent_reference_step(0, wake_step),
+                    ),
                     0.12,
                 ),
                 ActivityIntent(
                     base_zone,
-                    12,
+                    wake_step,
                     departure_wave_start,
                     "slow_checkout",
-                    self._pick_business(rng, cohort, base_zone, "breakfast"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        base_zone,
+                        "breakfast",
+                        self._intent_reference_step(wake_step, departure_wave_start),
+                    ),
                     0.26,
                 ),
                 ActivityIntent("airport_zone", departure_wave_start, airport_arrival_end, "airport_departure", None, 0.0),
@@ -680,10 +899,16 @@ class SimulationEngine:
             intents.append(
                 ActivityIntent(
                     "texas_live_zone",
-                    14,
+                    breakfast_end,
                     24,
                     "late_checkout_party",
-                    self._pick_business(rng, cohort, "texas_live_zone", "celebration"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        "texas_live_zone",
+                        "celebration",
+                        self._intent_reference_step(breakfast_end, 24),
+                    ),
                     0.61,
                 )
             )
@@ -692,10 +917,16 @@ class SimulationEngine:
             intents.append(
                 ActivityIntent(
                     city_zone,
-                    14,
+                    breakfast_end,
                     24,
                     "last_stop",
-                    self._pick_business(rng, cohort, city_zone, "explore"),
+                    self._pick_business(
+                        rng,
+                        cohort,
+                        city_zone,
+                        "explore",
+                        self._intent_reference_step(breakfast_end, 24),
+                    ),
                     0.48,
                 )
             )
@@ -747,10 +978,66 @@ class SimulationEngine:
             return self._weighted_choice(rng, [("local_zone", 0.54), ("downtown_zone", 0.24), ("uptown_zone", 0.22)])
         return self._weighted_choice(rng, [("local_zone", 0.34), ("texas_live_zone", 0.21), ("downtown_zone", 0.22), ("deep_ellum_zone", 0.23)])
 
-    def _pick_business(self, rng: random.Random, cohort: Cohort, zone_id: str, purpose: str) -> str | None:
+    def _business_type_preferences(self, purpose: str) -> set[str] | None:
+        mapping = {
+            "breakfast": {"hotel", "hotel_bar"},
+            "hotel": {"hotel", "hotel_bar"},
+            "check_in": {"hotel", "hotel_bar"},
+            "hotel_reset": {"hotel", "hotel_bar"},
+            "overnight_stay": {"hotel", "hotel_bar"},
+            "slow_checkout": {"hotel", "hotel_bar"},
+            "prematch": {"sports_bar", "cocktail_bar", "hotel_bar"},
+            "watch_party": {"sports_bar", "cocktail_bar", "hotel_bar"},
+            "celebration": {"sports_bar", "cocktail_bar", "hotel_bar"},
+            "day_before_bar": {"sports_bar", "cocktail_bar", "hotel_bar"},
+            "explore": {"sports_bar", "cocktail_bar", "hotel_bar"},
+            "quiet": {"cocktail_bar", "hotel_bar", "hotel"},
+        }
+        return mapping.get(purpose)
+
+    def _is_business_open_at_step(self, business: dict[str, Any], step: int) -> bool:
+        hours = str(business.get("hours", "")).strip()
+        if not hours or hours == "24/7":
+            return True
+        try:
+            open_label, close_label = hours.split("-", maxsplit=1)
+            open_hour, open_minute = (int(part) for part in open_label.split(":"))
+            close_hour, close_minute = (int(part) for part in close_label.split(":"))
+        except ValueError:
+            return True
+
+        total_minutes = self.timeline["start_hour"] * 60 + step * self.step_minutes
+        day_minutes = total_minutes % (24 * 60)
+        open_minutes = (open_hour * 60) + open_minute
+        close_minutes = (close_hour * 60) + close_minute
+        if open_minutes == close_minutes:
+            return True
+        if close_minutes < open_minutes:
+            return day_minutes >= open_minutes or day_minutes < close_minutes
+        return open_minutes <= day_minutes < close_minutes
+
+    def _pick_business(
+        self,
+        rng: random.Random,
+        cohort: Cohort,
+        zone_id: str,
+        purpose: str,
+        reference_step: int | None = None,
+    ) -> str | None:
         candidates = self.businesses_by_zone.get(zone_id, [])
         if not candidates:
             return None
+
+        if reference_step is not None:
+            candidates = [business for business in candidates if self._is_business_open_at_step(business, reference_step)]
+            if not candidates:
+                return None
+
+        preferred_types = self._business_type_preferences(purpose)
+        if preferred_types:
+            preferred_candidates = [business for business in candidates if business["type"] in preferred_types]
+            if preferred_candidates:
+                candidates = preferred_candidates
 
         weighted: list[tuple[str, float]] = []
         for business in candidates:
@@ -932,10 +1219,16 @@ class SimulationEngine:
         business_load = max(0, round(cohort.size * intent.crowd_share * visit_multiplier))
         if business_load <= 0:
             return 0
+        active_steps = 0
         for step in range(max(0, start_step), min(self.steps_per_day, end_step)):
+            if not self._is_business_open_at_step(business, step):
+                continue
             aggregates["businesses"]["total"][intent.business_id][step] += business_load
             aggregates["businesses"][layer][intent.business_id][step] += business_load
-        aggregates["business_nationality_mix"][intent.business_id][layer] += business_load * max(1, end_step - start_step)
+            active_steps += 1
+        if active_steps <= 0:
+            return 0
+        aggregates["business_nationality_mix"][intent.business_id][layer] += business_load * active_steps
         return 1 if self._counts_as_hospitality_visit(intent, business) else 0
 
     def _record_trip(self, aggregates: dict[str, Any], travel: dict[str, Any], cohort: Cohort) -> None:
@@ -1016,6 +1309,9 @@ class SimulationEngine:
 
                 remaining = overflow
                 for target_id in self._candidate_spillover_targets(business_id):
+                    target_business = self.businesses[target_id]
+                    if not self._is_business_open_at_step(target_business, step):
+                        continue
                     target_total = aggregates["businesses"]["total"][target_id][step]
                     headroom = self._business_capacity_limit(target_id) - target_total
                     if headroom <= 0:

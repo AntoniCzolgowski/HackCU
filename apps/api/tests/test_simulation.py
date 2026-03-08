@@ -44,3 +44,15 @@ def test_match_window_behavior_and_weekday_locals_heuristic() -> None:
     baseline_load = baseline["days"]["0"]["edges"]["total"]["design_stadium"][weekend_engine.kickoff_step]
     blocked_load = blocked["days"]["0"]["edges"]["total"]["design_stadium"][weekend_engine.kickoff_step]
     assert blocked_load >= baseline_load
+
+
+def test_match_day_bars_do_not_fill_before_opening_time() -> None:
+    engine = SimulationEngine(load_seed_bundle(city_id="dallas", match_id=DEFAULT_MATCH_ID))
+    scenario = engine.generate_scenario(scenario_id="morning-realism")
+    day = scenario["days"]["0"]["business_day_summary"]
+
+    happiest_hour = day["biz_happiest_hour"]["active_visitors_series_15m"]
+    texas_live = day["biz_texas_live"]["active_visitors_series_15m"]
+
+    assert max(happiest_hour[: engine._step_for_clock(11, 0)]) == 0
+    assert max(texas_live[: engine._step_for_clock(10, 0)]) == 0
