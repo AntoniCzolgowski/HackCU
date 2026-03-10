@@ -1,0 +1,22 @@
+{
+  "special_venues": [
+    {
+      "id": "stadium_zone",
+      "name": "AT&T Stadium",
+      "entity_type": "stadium",
+      "zone_id": "stadium_zone",
+      "lat": 32.7473,
+      "lng": -97.0945,
+      "comfort_capacity": 80000
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "FIFA Fan Zone",
+      "entity_type": "fanzone",
+      "zone_id": "fanzone_zone",
+      "lat": 32.7574,
+      "lng": -97.0715,
+      "comfort_capacity": 18000
+    }
+  ]
+}

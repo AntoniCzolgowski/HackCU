@@ -1,0 +1,452 @@
+{
+  "city": {
+    "city_id": "san-francisco",
+    "name": "San Francisco Bay Area",
+    "venue_name": "Levi's Stadium",
+    "venue_capacity": 68000,
+    "country": "USA",
+    "timezone": "America/Los_Angeles",
+    "default_map_center": [
+      -122.11,
+      37.553
+    ],
+    "default_map_zoom": 9.3
+  },
+  "nodes": [
+    {
+      "id": "dfw_airport",
+      "label": "San Francisco International Airport",
+      "lat": 37.6213,
+      "lng": -122.379
+    },
+    {
+      "id": "grapevine_junction",
+      "label": "Peninsula Gateway",
+      "lat": 37.5062,
+      "lng": -122.2595
+    },
+    {
+      "id": "las_colinas",
+      "label": "San Mateo Hotel District",
+      "lat": 37.563,
+      "lng": -122.3255
+    },
+    {
+      "id": "irving_gateway",
+      "label": "Redwood City Connector",
+      "lat": 37.4852,
+      "lng": -122.2364
+    },
+    {
+      "id": "design_district",
+      "label": "Mission Bay",
+      "lat": 37.7714,
+      "lng": -122.391
+    },
+    {
+      "id": "downtown_dallas",
+      "label": "Downtown San Francisco",
+      "lat": 37.7879,
+      "lng": -122.4074
+    },
+    {
+      "id": "uptown",
+      "label": "SoMa",
+      "lat": 37.7786,
+      "lng": -122.4059
+    },
+    {
+      "id": "deep_ellum",
+      "label": "Mission District",
+      "lat": 37.7599,
+      "lng": -122.4148
+    },
+    {
+      "id": "arlington_north",
+      "label": "Santa Clara North",
+      "lat": 37.4117,
+      "lng": -121.9795
+    },
+    {
+      "id": "stadium",
+      "label": "Levi's Stadium",
+      "lat": 37.4031,
+      "lng": -121.9696
+    },
+    {
+      "id": "texas_live",
+      "label": "Levi's Match District",
+      "lat": 37.4057,
+      "lng": -121.969
+    },
+    {
+      "id": "arlington_hotels",
+      "label": "Santa Clara Hotel Cluster",
+      "lat": 37.3963,
+      "lng": -121.9787
+    },
+    {
+      "id": "local_neighborhoods",
+      "label": "South Bay Neighborhoods",
+      "lat": 37.3417,
+      "lng": -121.954
+    },
+    {
+      "id": "fanzone",
+      "label": "Bay Area Fan Zone",
+      "lat": 37.4081,
+      "lng": -121.9607
+    }
+  ],
+  "edges": [
+    {
+      "id": "dfw_grapevine",
+      "source": "dfw_airport",
+      "target": "grapevine_junction",
+      "road_name": "Bayshore Freeway",
+      "capacity": 8200,
+      "base_travel_minutes": 17,
+      "distance_km": 19.6,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "grapevine_las_colinas",
+      "source": "grapevine_junction",
+      "target": "las_colinas",
+      "road_name": "Bayshore Freeway via South El Camino Real",
+      "capacity": 7800,
+      "base_travel_minutes": 12,
+      "distance_km": 10.5,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_irving",
+      "source": "las_colinas",
+      "target": "irving_gateway",
+      "road_name": "Bayshore Freeway",
+      "capacity": 7600,
+      "base_travel_minutes": 13,
+      "distance_km": 13.9,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_design",
+      "source": "irving_gateway",
+      "target": "design_district",
+      "road_name": "Bayshore Freeway",
+      "capacity": 8900,
+      "base_travel_minutes": 34,
+      "distance_km": 41.2,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_downtown",
+      "source": "design_district",
+      "target": "downtown_dallas",
+      "road_name": "3rd Street",
+      "capacity": 5400,
+      "base_travel_minutes": 5,
+      "distance_km": 2.8,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_uptown",
+      "source": "downtown_dallas",
+      "target": "uptown",
+      "road_name": "5th Street via Mason Street",
+      "capacity": 3200,
+      "base_travel_minutes": 3,
+      "distance_km": 1.5,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_deep_ellum",
+      "source": "downtown_dallas",
+      "target": "deep_ellum",
+      "road_name": "Mission Street via Folsom Street",
+      "capacity": 2800,
+      "base_travel_minutes": 7,
+      "distance_km": 4.3,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "downtown_stadium",
+      "source": "downtown_dallas",
+      "target": "stadium",
+      "road_name": "Bayshore Freeway",
+      "capacity": 9600,
+      "base_travel_minutes": 56,
+      "distance_km": 69.6,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "irving_stadium",
+      "source": "irving_gateway",
+      "target": "stadium",
+      "road_name": "Bayshore Freeway",
+      "capacity": 9300,
+      "base_travel_minutes": 26,
+      "distance_km": 28.7,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_north_stadium",
+      "source": "arlington_north",
+      "target": "stadium",
+      "road_name": "Tasman Drive via Great America Parkway",
+      "capacity": 3400,
+      "base_travel_minutes": 5,
+      "distance_km": 2.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_stadium",
+      "source": "texas_live",
+      "target": "stadium",
+      "road_name": "Marie P. DeBartolo Way via Tasman Drive",
+      "capacity": 1900,
+      "base_travel_minutes": 1,
+      "distance_km": 0.3,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "arlington_hotels_stadium",
+      "source": "arlington_hotels",
+      "target": "stadium",
+      "road_name": "Tasman Drive via Old Ironsides Drive",
+      "capacity": 2200,
+      "base_travel_minutes": 4,
+      "distance_km": 2.1,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_stadium",
+      "source": "local_neighborhoods",
+      "target": "stadium",
+      "road_name": "San Tomas Expressway via Scott Boulevard",
+      "capacity": 3100,
+      "base_travel_minutes": 13,
+      "distance_km": 10.4,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_fanzone",
+      "source": "texas_live",
+      "target": "fanzone",
+      "road_name": "Lick Mill Boulevard via Tasman Drive",
+      "capacity": 1600,
+      "base_travel_minutes": 3,
+      "distance_km": 2.0,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "local_hotels",
+      "source": "local_neighborhoods",
+      "target": "arlington_hotels",
+      "road_name": "San Tomas Expressway via Scott Boulevard",
+      "capacity": 2600,
+      "base_travel_minutes": 11,
+      "distance_km": 8.8,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "texas_live_arlington_north",
+      "source": "texas_live",
+      "target": "arlington_north",
+      "road_name": "Tasman Drive via Great America Parkway",
+      "capacity": 2400,
+      "base_travel_minutes": 4,
+      "distance_km": 2.3,
+      "kind": "local",
+      "bidirectional": true
+    },
+    {
+      "id": "fanzone_arlington_hotels",
+      "source": "fanzone",
+      "target": "arlington_hotels",
+      "road_name": "Tasman Drive via Great America Parkway",
+      "capacity": 2100,
+      "base_travel_minutes": 4,
+      "distance_km": 2.7,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "las_colinas_downtown",
+      "source": "las_colinas",
+      "target": "downtown_dallas",
+      "road_name": "Bayshore Freeway",
+      "capacity": 7000,
+      "base_travel_minutes": 27,
+      "distance_km": 32.7,
+      "kind": "highway",
+      "bidirectional": true
+    },
+    {
+      "id": "design_uptown",
+      "source": "design_district",
+      "target": "uptown",
+      "road_name": "7th Street via 6th Street",
+      "capacity": 2500,
+      "base_travel_minutes": 5,
+      "distance_km": 2.2,
+      "kind": "arterial",
+      "bidirectional": true
+    },
+    {
+      "id": "design_stadium",
+      "source": "design_district",
+      "target": "stadium",
+      "road_name": "Bayshore Freeway",
+      "capacity": 6100,
+      "base_travel_minutes": 54,
+      "distance_km": 67.0,
+      "kind": "highway",
+      "bidirectional": true
+    }
+  ],
+  "zones": [
+    {
+      "id": "stadium_zone",
+      "name": "Levi's Stadium Bowl",
+      "kind": "stadium",
+      "node_id": "stadium",
+      "center": [
+        -121.9696,
+        37.4031
+      ],
+      "radius_m": 350,
+      "focus_color": "#F97316"
+    },
+    {
+      "id": "fanzone_zone",
+      "name": "Bay Area Fan Zone",
+      "kind": "fanzone",
+      "node_id": "fanzone",
+      "center": [
+        -121.9607,
+        37.4081
+      ],
+      "radius_m": 450,
+      "focus_color": "#F4B942"
+    },
+    {
+      "id": "texas_live_zone",
+      "name": "Levi's Match District",
+      "kind": "bar_cluster",
+      "node_id": "texas_live",
+      "center": [
+        -121.969,
+        37.4057
+      ],
+      "radius_m": 600,
+      "focus_color": "#F43F5E"
+    },
+    {
+      "id": "arlington_hotels_zone",
+      "name": "Santa Clara Hotel Cluster",
+      "kind": "hotel_cluster",
+      "node_id": "arlington_hotels",
+      "center": [
+        -121.9787,
+        37.3963
+      ],
+      "radius_m": 700,
+      "focus_color": "#22C55E"
+    },
+    {
+      "id": "local_zone",
+      "name": "South Bay Neighborhoods",
+      "kind": "residential",
+      "node_id": "local_neighborhoods",
+      "center": [
+        -121.954,
+        37.3417
+      ],
+      "radius_m": 850,
+      "focus_color": "#64748B"
+    },
+    {
+      "id": "las_colinas_zone",
+      "name": "San Mateo Hotel District",
+      "kind": "hotel_cluster",
+      "node_id": "las_colinas",
+      "center": [
+        -122.3255,
+        37.563
+      ],
+      "radius_m": 780,
+      "focus_color": "#0EA5E9"
+    },
+    {
+      "id": "downtown_zone",
+      "name": "Downtown San Francisco",
+      "kind": "hotel_cluster",
+      "node_id": "downtown_dallas",
+      "center": [
+        -122.4074,
+        37.7879
+      ],
+      "radius_m": 950,
+      "focus_color": "#14B8A6"
+    },
+    {
+      "id": "uptown_zone",
+      "name": "SoMa",
+      "kind": "bar_cluster",
+      "node_id": "uptown",
+      "center": [
+        -122.4059,
+        37.7786
+      ],
+      "radius_m": 700,
+      "focus_color": "#8B5CF6"
+    },
+    {
+      "id": "deep_ellum_zone",
+      "name": "Mission District",
+      "kind": "bar_cluster",
+      "node_id": "deep_ellum",
+      "center": [
+        -122.4148,
+        37.7599
+      ],
+      "radius_m": 650,
+      "focus_color": "#EF4444"
+    },
+    {
+      "id": "airport_zone",
+      "name": "San Francisco International Airport",
+      "kind": "transport",
+      "node_id": "dfw_airport",
+      "center": [
+        -122.379,
+        37.6213
+      ],
+      "radius_m": 1100,
+      "focus_color": "#3B82F6"
+    }
+  ],
+  "provenance": {
+    "seed_graph": "reduced host-city road simulation graph with city-specific corridor geometry",
+    "businesses": "seeded host-city venues curated for business-intelligence demos",
+    "weather": "baseline match weather profile with city-local kickoff timing",
+    "places_enrichment": "optional live Google Places overlay",
+    "llm_recommendations": "heuristic by default, optionally upgraded through Anthropic"
+  }
+}
